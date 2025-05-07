@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-body p-5">
+                    <h1 class="card-title text-center mb-4">
+                        <i class="fas fa-tshirt text-primary me-2"></i>Clothing Recommendations
+                    </h1>
+                    <p class="lead text-center mb-5">Get AI-powered outfit suggestions based on the weather</p>
+                    
+                    <div class="location-search mb-4">
+                        <label for="locationInput" class="form-label">Enter your location</label>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" id="locationInput" placeholder="City, Country">
+                            <button class="btn btn-primary" type="button" id="searchButton">
+                                <i class="fas fa-search me-1"></i>Search
+                            </button>
+                        </div>
+                        <div class="form-text">Or use your current location: 
+                            <button class="btn btn-sm btn-outline-secondary" id="useLocationBtn">
+                                <i class="fas fa-map-marker-alt me-1"></i>Use my location
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="preferences mb-4">
+                        <h5 class="mb-3">Preferences</h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="genderSelect" class="form-label">Style Preference</label>
+                                <select class="form-select" id="genderSelect">
+                                    <option value="neutral">Neutral</option>
+                                    <option value="masculine">Masculine</option>
+                                    <option value="feminine">Feminine</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="activitySelect" class="form-label">Activity Type</label>
+                                <select class="form-select" id="activitySelect">
+                                    <option value="casual">Casual</option>
+                                    <option value="work">Work/Business</option>
+                                    <option value="sports">Sports/Exercise</option>
+                                    <option value="formal">Formal</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="loadingRecommendations" class="text-center d-none">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Generating outfit recommendations...</p>
+                    </div>
+                    
+                    <div id="apiKeyMissingAlert" class="d-none mb-4">
+                        <div class="alert alert-warning">
+                            <h5 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>OpenAI API Key Required</h5>
+                            <p>To use the AI-powered clothing recommendations feature, an OpenAI API key is required.</p>
+                            <p class="mb-0">Please contact the administrator to configure the OpenAI API key.</p>
+                        </div>
+                    </div>
+                    
+                    <div id="recommendationsContainer" class="d-none">
+                        <div class="weather-overview mb-4">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="weather-icon me-3">
+                                            <i class="weather-condition-icon fas fa-sun fa-3x text-warning"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="weather-location mb-1">Loading location...</h5>
+                                            <div class="d-flex">
+                                                <div class="me-3">
+                                                    <span class="weather-temp fw-bold">--°C</span>
+                                                </div>
+                                                <div class="weather-description text-muted">
+                                                    Weather condition
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="recommendations mb-4">
+                            <h5 class="mb-3">Outfit Recommendations</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="card h-100 outfit-card">
+                                        <div class="card-header bg-primary text-white">
+                                            <h6 class="mb-0">For Today</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <ul class="list-group list-group-flush" id="todayOutfit">
+                                                <li class="list-group-item">
+                                                    <i class="fas fa-circle text-secondary me-2"></i>Loading...
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="card h-100 outfit-card">
+                                        <div class="card-header bg-info text-white">
+                                            <h6 class="mb-0">For Tonight</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <ul class="list-group list-group-flush" id="tonightOutfit">
+                                                <li class="list-group-item">
+                                                    <i class="fas fa-circle text-secondary me-2"></i>Loading...
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="tips">
+                            <h5 class="mb-3">Weather-Based Tips</h5>
+                            <div class="card">
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush tips-list" id="clothingTips">
+                                        <li class="list-group-item">
+                                            <i class="fas fa-lightbulb text-warning me-2"></i>Loading tips...
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <button class="btn btn-lg btn-primary" id="generateBtn">
+                            <i class="fas fa-tshirt me-2"></i>Get Recommendations
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize all DOM elements with checks to prevent null access
+    const locationInput = document.getElementById('locationInput') || document.createElement('input');
+    const searchButton = document.getElementById('searchButton') || document.createElement('button');
+    const useLocationBtn = document.getElementById('useLocationBtn') || document.createElement('button');
+    const generateBtn = document.getElementById('generateBtn') || document.createElement('button');
+    const loadingRecommendations = document.getElementById('loadingRecommendations') || document.createElement('div');
+    const recommendationsContainer = document.getElementById('recommendationsContainer') || document.createElement('div');
+    const genderSelect = document.getElementById('genderSelect') || document.createElement('select');
+    const activitySelect = document.getElementById('activitySelect') || document.createElement('select');
+    
+    // Default coordinates for New York
+    let lat = 40.7128;
+    let lon = -74.0060;
+    
+    // Initialize with these default values
+    if (locationInput.value === '') {
+        locationInput.value = 'New York, USA';
+    }
+    
+    // Use current location
+    useLocationBtn.addEventListener('click', function() {
+        if (navigator.geolocation) {
+            useLocationBtn.disabled = true;
+            useLocationBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Locating...';
+            
+            navigator.geolocation.getCurrentPosition(function(position) {
+                lat = position.coords.latitude;
+                lon = position.coords.longitude;
+                
+                // Reverse geocode to get location name
+                fetch(`/api/reverse-geocode?lat=${lat}&lon=${lon}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            locationInput.value = data.location;
+                        }
+                        useLocationBtn.disabled = false;
+                        useLocationBtn.innerHTML = '<i class="fas fa-map-marker-alt me-1"></i>Use my location';
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        useLocationBtn.disabled = false;
+                        useLocationBtn.innerHTML = '<i class="fas fa-map-marker-alt me-1"></i>Use my location';
+                    });
+            }, function(error) {
+                console.error('Geolocation error:', error);
+                useLocationBtn.disabled = false;
+                useLocationBtn.innerHTML = '<i class="fas fa-map-marker-alt me-1"></i>Use my location';
+                alert('Unable to retrieve your location. Please enter it manually.');
+            });
+        } else {
+            alert('Geolocation is not supported by your browser. Please enter your location manually.');
+        }
+    });
+    
+    // Search location
+    searchButton.addEventListener('click', function() {
+        const location = locationInput.value.trim();
+        if (location) {
+            searchButton.disabled = true;
+            searchButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Searching...';
+            
+            fetch(`/api/geocode?location=${encodeURIComponent(location)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        lat = data.lat;
+                        lon = data.lon;
+                        searchButton.disabled = false;
+                        searchButton.innerHTML = '<i class="fas fa-search me-1"></i>Search';
+                    } else {
+                        alert('Location not found. Please try again.');
+                        searchButton.disabled = false;
+                        searchButton.innerHTML = '<i class="fas fa-search me-1"></i>Search';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    searchButton.disabled = false;
+                    searchButton.innerHTML = '<i class="fas fa-search me-1"></i>Search';
+                });
+        } else {
+            alert('Please enter a location.');
+        }
+    });
+    
+    // Generate recommendations
+    generateBtn.addEventListener('click', function() {
+        const location = locationInput.value.trim();
+        if (!location) {
+            alert('Please enter a location or use your current location.');
+            return;
+        }
+        
+        if (loadingRecommendations) loadingRecommendations.classList.remove('d-none');
+        if (recommendationsContainer) recommendationsContainer.classList.add('d-none');
+        generateBtn.disabled = true;
+        
+        const gender = genderSelect.value;
+        const activity = activitySelect.value;
+        
+        // Simplified approach: pass the location directly to the API
+        getClothingRecommendations(location, gender, activity);
+    });
+    
+    function getClothingRecommendations(location, gender, activity) {
+        console.log("Fetching recommendations with location:", location, "gender:", gender, "activity:", activity);
+        
+        // Simplified API call that doesn't rely on coordinates
+        fetch(`/api/clothing?location=${encodeURIComponent(location)}&gender=${gender}&activity=${activity}`)
+            .then(response => {
+                console.log("Response status:", response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log("API response:", data);
+                if (data.success) {
+                    // Update weather overview
+                    document.querySelector('.weather-location').textContent = data.location;
+                    document.querySelector('.weather-temp').textContent = `${data.current.temp}°C`;
+                    document.querySelector('.weather-description').textContent = data.current.description;
+                    
+                    // Update weather icon
+                    const iconElement = document.querySelector('.weather-condition-icon');
+                    iconElement.className = '';
+                    iconElement.classList.add('weather-condition-icon', 'fas', data.current.icon_class, 'fa-3x', 'text-warning');
+                    
+                    // Update outfit recommendations
+                    const todayOutfit = document.getElementById('todayOutfit');
+                    todayOutfit.innerHTML = '';
+                    data.recommendations.today.forEach(item => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item';
+                        li.innerHTML = `<i class="fas fa-circle text-primary me-2"></i>${item}`;
+                        todayOutfit.appendChild(li);
+                    });
+                    
+                    const tonightOutfit = document.getElementById('tonightOutfit');
+                    tonightOutfit.innerHTML = '';
+                    data.recommendations.tonight.forEach(item => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item';
+                        li.innerHTML = `<i class="fas fa-circle text-info me-2"></i>${item}`;
+                        tonightOutfit.appendChild(li);
+                    });
+                    
+                    // Update tips
+                    const clothingTips = document.getElementById('clothingTips');
+                    clothingTips.innerHTML = '';
+                    data.tips.forEach(tip => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item';
+                        li.innerHTML = `<i class="fas fa-lightbulb text-warning me-2"></i>${tip}`;
+                        clothingTips.appendChild(li);
+                    });
+                    
+                    if (recommendationsContainer) {
+                        recommendationsContainer.classList.remove('d-none');
+                    }
+                } else {
+                    // Check if it's an API key missing error
+                    const apiKeyMissingAlert = document.getElementById('apiKeyMissingAlert');
+                    if (apiKeyMissingAlert && data.error_type === 'api_key_missing') {
+                        apiKeyMissingAlert.classList.remove('d-none');
+                    } else {
+                        console.error('Failed to get recommendations:', data.message);
+                        alert('Could not generate recommendations. Please try again.');
+                    }
+                }
+                
+                loadingRecommendations.classList.add('d-none');
+                generateBtn.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                
+                // Show API key missing message for common error cases
+                const apiKeyMissingAlert = document.getElementById('apiKeyMissingAlert');
+                if (apiKeyMissingAlert) {
+                    apiKeyMissingAlert.classList.remove('d-none');
+                }
+                
+                loadingRecommendations.classList.add('d-none');
+                generateBtn.disabled = false;
+            });
+    }
+});
+</script>
+{% endblock %}

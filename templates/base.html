@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Weather Insights{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- Additional CSS blocks -->
+    {% block extra_css %}{% endblock %}
+    
+    <style>
+        :root {
+            --primary-color: #1976D2;
+            --secondary-color: #F5F5F5;
+            --accent-color: #42A5F5;
+            --text-color: #333;
+            --light-text: #6c757d;
+            --border-radius: 0.5rem;
+            --card-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
+        }
+        
+        body {
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            color: var(--text-color);
+            background-color: #F8F9FA;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        main {
+            flex: 1;
+            padding: 2rem 0;
+        }
+        
+        .navbar {
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+        
+        .nav-link {
+            font-weight: 500;
+        }
+        
+        .nav-link.active {
+            color: var(--primary-color) !important;
+            font-weight: 600;
+        }
+        
+        .page-title {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .section-heading {
+            font-weight: 700;
+            color: var(--text-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 0.5rem;
+            display: inline-block;
+        }
+        
+        .section-subheading {
+            color: var(--light-text);
+            margin-bottom: 1.5rem;
+        }
+        
+        .feature-card {
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            border: none;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .weather-detail {
+            display: flex;
+            align-items: center;
+        }
+        
+        .detail-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(66, 165, 245, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            color: var(--primary-color);
+        }
+        
+        footer {
+            margin-top: auto;
+            background-color: #ffffff;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 2rem 0;
+            color: var(--light-text);
+        }
+        
+        /* Loading and error states */
+        .loading-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+        }
+        
+        .error-container {
+            padding: 2rem;
+            text-align: center;
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg bg-white navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">
+                <i class="fas fa-cloud-sun me-2"></i>
+                Weather Insights
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if active_page == 'home' else '' }}" href="{{ url_for('main.index') }}">
+                            <i class="fas fa-home me-1"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if active_page == 'map' else '' }}" href="{{ url_for('main.map') }}">
+                            <i class="fas fa-map-marked-alt me-1"></i> Weather Map
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if active_page == 'historical-trends' else '' }}" href="{{ url_for('main.historical_trends') }}">
+                            <i class="fas fa-chart-line me-1"></i> Historical Trends
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-tools me-1"></i> Tools
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item {{ 'active' if active_page == 'clothing-recommendations' else '' }}" href="{{ url_for('main.clothing_recommendations') }}">
+                                    <i class="fas fa-tshirt me-1"></i> Clothing Recommendations
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item {{ 'active' if active_page == 'health-alerts' else '' }}" href="{{ url_for('main.health_alerts') }}">
+                                    <i class="fas fa-heartbeat me-1"></i> Health Alerts
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item {{ 'active' if active_page == 'gardening-weather' else '' }}" href="{{ url_for('main.gardening_weather') }}">
+                                    <i class="fas fa-seedling me-1"></i> Gardening Weather
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item {{ 'active' if active_page == 'trip-planner' else '' }}" href="{{ url_for('main.trip_planner') }}">
+                                    <i class="fas fa-suitcase me-1"></i> Trip Planner
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if active_page == 'feedback' else '' }}" href="{{ url_for('main.feedback') }}">
+                            <i class="fas fa-comment-alt me-1"></i> Feedback
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if active_page == 'login' else '' }}" href="{{ url_for('main.login') }}">
+                            <i class="fas fa-sign-in-alt me-1"></i> Login
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if active_page == 'signup' else '' }}" href="{{ url_for('main.signup') }}">
+                            <i class="fas fa-user-plus me-1"></i> Sign Up
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-white">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <h5 class="fw-bold mb-3">Weather Insights</h5>
+                    <p class="mb-0">Providing accurate weather forecasts and personalized insights for locations worldwide. Make informed decisions with our comprehensive weather platform.</p>
+                </div>
+                <div class="col-md-2 mb-4 mb-md-0">
+                    <h5 class="fw-bold mb-3">Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{{ url_for('main.index') }}" class="text-decoration-none text-secondary">Home</a></li>
+                        <li class="mb-2"><a href="{{ url_for('main.map') }}" class="text-decoration-none text-secondary">Weather Map</a></li>
+                        <li class="mb-2"><a href="{{ url_for('main.historical_trends') }}" class="text-decoration-none text-secondary">Historical Trends</a></li>
+                        <li><a href="{{ url_for('main.about') }}" class="text-decoration-none text-secondary">About Us</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 mb-4 mb-md-0">
+                    <h5 class="fw-bold mb-3">Weather Tools</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{{ url_for('main.clothing_recommendations') }}" class="text-decoration-none text-secondary">Clothing Recommendations</a></li>
+                        <li class="mb-2"><a href="{{ url_for('main.health_alerts') }}" class="text-decoration-none text-secondary">Health Alerts</a></li>
+                        <li class="mb-2"><a href="{{ url_for('main.gardening_weather') }}" class="text-decoration-none text-secondary">Gardening Weather</a></li>
+                        <li><a href="{{ url_for('main.trip_planner') }}" class="text-decoration-none text-secondary">Trip Planner</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5 class="fw-bold mb-3">Connect With Us</h5>
+                    <div class="d-flex mb-3">
+                        <a href="#" class="text-secondary me-3"><i class="fab fa-facebook-f fa-lg"></i></a>
+                        <a href="#" class="text-secondary me-3"><i class="fab fa-twitter fa-lg"></i></a>
+                        <a href="#" class="text-secondary me-3"><i class="fab fa-instagram fa-lg"></i></a>
+                        <a href="#" class="text-secondary"><i class="fab fa-linkedin-in fa-lg"></i></a>
+                    </div>
+                    <p class="mb-0">
+                        <i class="fas fa-envelope me-2"></i>
+                        <a href="mailto:info@weatherinsights.com" class="text-decoration-none text-secondary">info@weatherinsights.com</a>
+                    </p>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <p class="mb-0">&copy; 2025 Weather Insights. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="#" class="text-decoration-none text-secondary me-3">Privacy Policy</a>
+                    <a href="#" class="text-decoration-none text-secondary me-3">Terms of Service</a>
+                    <a href="#" class="text-decoration-none text-secondary">Cookie Policy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Main JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <!-- Additional JS blocks -->
+    {% block extra_js %}{% endblock %}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Weather Insights initialized');
+            
+            // Initialize Bootstrap tooltips
+            const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+            const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+            
+            // Try to get user's location for better weather data (with user permission)
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    // Store position in localStorage for use across the app
+                    localStorage.setItem('userLat', position.coords.latitude);
+                    localStorage.setItem('userLon', position.coords.longitude);
+                    
+                    // Dispatch a custom event that other scripts can listen for
+                    document.dispatchEvent(new CustomEvent('userLocationReady', {
+                        detail: {
+                            lat: position.coords.latitude,
+                            lon: position.coords.longitude
+                        }
+                    }));
+                }, function(error) {
+                    console.warn('Geolocation error:', error);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

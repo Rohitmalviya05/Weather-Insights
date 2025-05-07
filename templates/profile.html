@@ -1,0 +1,635 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - Weather Insights{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-4 fw-bold mb-3">Your Profile</h1>
+                <p class="lead">Customize your settings and manage your saved locations</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Profile Content -->
+<div class="container my-5">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <div class="text-center mb-3">
+                        <div class="avatar-circle mx-auto mb-3">
+                            <i class="fas fa-user-circle fs-1 text-primary"></i>
+                        </div>
+                        <h5 class="mb-0">{{ current_user.username }}</h5>
+                        <p class="text-muted small">{{ current_user.email }}</p>
+                    </div>
+                    
+                    <div class="list-group list-group-flush">
+                        <a href="#preferences" class="list-group-item list-group-item-action bg-transparent px-0 active" data-bs-toggle="tab">
+                            <i class="fas fa-cog me-2"></i>Preferences
+                        </a>
+                        <a href="#locations" class="list-group-item list-group-item-action bg-transparent px-0" data-bs-toggle="tab">
+                            <i class="fas fa-map-marker-alt me-2"></i>Saved Locations
+                        </a>
+                        <a href="#notifications" class="list-group-item list-group-item-action bg-transparent px-0" data-bs-toggle="tab">
+                            <i class="fas fa-bell me-2"></i>Notification Settings
+                        </a>
+                        <a href="#account" class="list-group-item list-group-item-action bg-transparent px-0" data-bs-toggle="tab">
+                            <i class="fas fa-user-cog me-2"></i>Account Settings
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-3">
+                    <div class="d-grid">
+                        <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            <div class="tab-content">
+                <!-- Preferences Tab -->
+                <div class="tab-pane fade show active" id="preferences">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <h4 class="card-title mb-4">Preferences</h4>
+                            
+                            {% with messages = get_flashed_messages(with_categories=true) %}
+                                {% if messages %}
+                                    {% for category, message in messages %}
+                                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                            {{ message }}
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+                            {% endwith %}
+                            
+                            <form method="POST" action="{{ url_for('main.profile') }}">
+                                <div class="mb-4">
+                                    <h5>Units</h5>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Temperature Unit</label>
+                                            <div class="d-flex">
+                                                <div class="form-check me-3">
+                                                    <input class="form-check-input" type="radio" name="temperature_unit" id="tempCelsius" value="C" {% if preferences and preferences.temperature_unit == 'C' %}checked{% endif %}>
+                                                    <label class="form-check-label" for="tempCelsius">
+                                                        Celsius (°C)
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="temperature_unit" id="tempFahrenheit" value="F" {% if preferences and preferences.temperature_unit == 'F' %}checked{% endif %}>
+                                                    <label class="form-check-label" for="tempFahrenheit">
+                                                        Fahrenheit (°F)
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Wind Speed Unit</label>
+                                            <select class="form-select" name="wind_speed_unit">
+                                                <option value="m/s" {% if preferences and preferences.wind_speed_unit == 'm/s' %}selected{% endif %}>Meters per second (m/s)</option>
+                                                <option value="km/h" {% if preferences and preferences.wind_speed_unit == 'km/h' %}selected{% endif %}>Kilometers per hour (km/h)</option>
+                                                <option value="mph" {% if preferences and preferences.wind_speed_unit == 'mph' %}selected{% endif %}>Miles per hour (mph)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <h5>Notifications</h5>
+                                    <div class="form-check form-switch mb-2">
+                                        <input class="form-check-input" type="checkbox" id="notification_enabled" name="notification_enabled" {% if preferences and preferences.notification_enabled %}checked{% endif %}>
+                                        <label class="form-check-label" for="notification_enabled">
+                                            Enable Weather Notifications
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="health_alerts_enabled" name="health_alerts_enabled" {% if preferences and preferences.health_alerts_enabled %}checked{% endif %}>
+                                        <label class="form-check-label" for="health_alerts_enabled">
+                                            Enable Health Alerts
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <h5>Health Considerations</h5>
+                                    <div class="mb-3">
+                                        <label class="form-label">Health Conditions (Separated by commas)</label>
+                                        <input type="text" class="form-control" name="health_conditions" placeholder="asthma, allergies, etc." value="{{ preferences.health_conditions if preferences else '' }}">
+                                        <div class="form-text">We'll use this to provide personalized health alerts related to weather conditions.</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>Save Preferences
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Saved Locations Tab -->
+                <div class="tab-pane fade" id="locations">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h4 class="card-title mb-0">Saved Locations</h4>
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addLocationModal">
+                                    <i class="fas fa-plus me-2"></i>Add Location
+                                </button>
+                            </div>
+                            
+                            {% if favorites and favorites|length > 0 %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Location</th>
+                                                <th>Coordinates</th>
+                                                <th>Default</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for favorite in favorites %}
+                                                <tr>
+                                                    <td>{{ favorite.location_name }}</td>
+                                                    <td>{{ favorite.latitude }}, {{ favorite.longitude }}</td>
+                                                    <td>
+                                                        {% if favorite.is_default %}
+                                                            <span class="badge bg-success">Default</span>
+                                                        {% else %}
+                                                            <button class="btn btn-sm btn-outline-primary set-default-btn" data-id="{{ favorite.id }}">
+                                                                Set Default
+                                                            </button>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-group btn-group-sm">
+                                                            <a href="{{ url_for('main.index') }}?lat={{ favorite.latitude }}&lon={{ favorite.longitude }}" class="btn btn-outline-secondary">
+                                                                <i class="fas fa-eye"></i>
+                                                            </a>
+                                                            <button class="btn btn-outline-danger delete-location-btn" data-id="{{ favorite.id }}">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-5">
+                                    <div class="mb-3">
+                                        <i class="fas fa-map-marked-alt fs-1 text-muted"></i>
+                                    </div>
+                                    <p>You haven't saved any locations yet.</p>
+                                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addLocationModal">
+                                        <i class="fas fa-plus me-2"></i>Add Location
+                                    </button>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Notification Settings Tab -->
+                <div class="tab-pane fade" id="notifications">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <h4 class="card-title mb-4">Notification Settings</h4>
+                            
+                            <div class="mb-4">
+                                <h5>Notification Methods</h5>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                                    <label class="form-check-label" for="emailNotifications">
+                                        Email Notifications
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="browserNotifications" checked>
+                                    <label class="form-check-label" for="browserNotifications">
+                                        Browser Notifications
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="smsNotifications">
+                                    <label class="form-check-label" for="smsNotifications">
+                                        SMS Notifications
+                                    </label>
+                                </div>
+                                
+                                <div class="mt-3 collapse" id="phoneNumberCollapse">
+                                    <label class="form-label">Phone Number</label>
+                                    <div class="input-group mb-3">
+                                        <input type="tel" class="form-control" placeholder="+1 (555) 123-4567">
+                                        <button class="btn btn-primary" type="button">Verify</button>
+                                    </div>
+                                    <div class="form-text">Standard SMS rates may apply.</div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h5>Notification Types</h5>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="severeWeatherAlerts" checked>
+                                    <label class="form-check-label" for="severeWeatherAlerts">
+                                        Severe Weather Alerts
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="dailyForecasts" checked>
+                                    <label class="form-check-label" for="dailyForecasts">
+                                        Daily Forecast Summaries
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="precipitationAlerts" checked>
+                                    <label class="form-check-label" for="precipitationAlerts">
+                                        Precipitation Alerts
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="temperatureChanges" checked>
+                                    <label class="form-check-label" for="temperatureChanges">
+                                        Significant Temperature Changes
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="healthAlerts">
+                                    <label class="form-check-label" for="healthAlerts">
+                                        Health-related Weather Alerts
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h5>Notification Frequency</h5>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="notificationFrequency" id="notifyRealtime" checked>
+                                    <label class="form-check-label" for="notifyRealtime">
+                                        Real-time (As they happen)
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="notificationFrequency" id="notifyDaily">
+                                    <label class="form-check-label" for="notifyDaily">
+                                        Daily Summary
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="notificationFrequency" id="notifyWeekly">
+                                    <label class="form-check-label" for="notifyWeekly">
+                                        Weekly Summary
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="button" class="btn btn-primary" id="saveNotificationSettings">
+                                    <i class="fas fa-save me-2"></i>Save Notification Settings
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Account Settings Tab -->
+                <div class="tab-pane fade" id="account">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <h4 class="card-title mb-4">Account Settings</h4>
+                            
+                            <form>
+                                <div class="mb-3">
+                                    <label class="form-label">Username</label>
+                                    <input type="text" class="form-control" value="{{ current_user.username }}" disabled>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" value="{{ current_user.email }}">
+                                </div>
+                                <hr class="my-4">
+                                <h5 class="mb-3">Change Password</h5>
+                                <div class="mb-3">
+                                    <label class="form-label">Current Password</label>
+                                    <input type="password" class="form-control">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">New Password</label>
+                                    <input type="password" class="form-control">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Confirm New Password</label>
+                                    <input type="password" class="form-control">
+                                </div>
+                                <div class="d-grid">
+                                    <button type="button" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>Save Changes
+                                    </button>
+                                </div>
+                            </form>
+                            
+                            <hr class="my-4">
+                            
+                            <div class="text-center">
+                                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                                    <i class="fas fa-user-slash me-2"></i>Delete Account
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Location Modal -->
+<div class="modal fade" id="addLocationModal" tabindex="-1" aria-labelledby="addLocationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addLocationModalLabel">Add Location</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="locationInput" class="form-label">Location</label>
+                    <input type="text" class="form-control" id="locationInput" placeholder="Enter a city or location">
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="defaultLocation">
+                    <label class="form-check-label" for="defaultLocation">Set as default location</label>
+                </div>
+                <div id="locationFeedback"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveLocationBtn">Save Location</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteAccountModalLabel">Delete Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Warning:</strong> This action cannot be undone.
+                </div>
+                <p>Are you sure you want to delete your account? This will permanently remove all your data including saved locations, preferences, and notification settings.</p>
+                <div class="mb-3">
+                    <label for="deleteConfirmation" class="form-label">Type "DELETE" to confirm</label>
+                    <input type="text" class="form-control" id="deleteConfirmation">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn" disabled>Delete Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // SMS Notification toggle
+        const smsNotifications = document.getElementById('smsNotifications');
+        const phoneNumberCollapse = document.getElementById('phoneNumberCollapse');
+        
+        if (smsNotifications && phoneNumberCollapse) {
+            smsNotifications.addEventListener('change', function() {
+                if (this.checked) {
+                    $(phoneNumberCollapse).collapse('show');
+                } else {
+                    $(phoneNumberCollapse).collapse('hide');
+                }
+            });
+        }
+        
+        // Save notification settings
+        const saveNotificationSettings = document.getElementById('saveNotificationSettings');
+        
+        if (saveNotificationSettings) {
+            saveNotificationSettings.addEventListener('click', function() {
+                // Show loading state
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Saving...';
+                
+                // Simulate saving (replace with actual API call in production)
+                setTimeout(() => {
+                    this.innerHTML = '<i class="fas fa-check me-2"></i>Settings Saved';
+                    
+                    setTimeout(() => {
+                        this.disabled = false;
+                        this.innerHTML = '<i class="fas fa-save me-2"></i>Save Notification Settings';
+                    }, 2000);
+                }, 1500);
+            });
+        }
+        
+        // Location search in modal
+        const locationInput = document.getElementById('locationInput');
+        const locationFeedback = document.getElementById('locationFeedback');
+        const saveLocationBtn = document.getElementById('saveLocationBtn');
+        
+        if (saveLocationBtn) {
+            saveLocationBtn.addEventListener('click', function() {
+                const location = locationInput.value.trim();
+                
+                if (!location) {
+                    locationFeedback.innerHTML = '<div class="alert alert-danger mt-3">Please enter a location.</div>';
+                    return;
+                }
+                
+                // Show loading state
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Saving...';
+                locationFeedback.innerHTML = '<div class="alert alert-info mt-3">Searching for location...</div>';
+                
+                // Geocode location (simulate API call)
+                setTimeout(() => {
+                    // Simulate successful geocoding
+                    const isDefault = document.getElementById('defaultLocation').checked;
+                    
+                    // Close modal
+                    $('#addLocationModal').modal('hide');
+                    
+                    // Show success message
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                    alertDiv.innerHTML = `
+                        <i class="fas fa-check-circle me-2"></i>
+                        Location "${location}" added successfully${isDefault ? ' and set as default' : ''}.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `;
+                    document.querySelector('.tab-content').prepend(alertDiv);
+                    
+                    // Reset modal
+                    locationInput.value = '';
+                    document.getElementById('defaultLocation').checked = false;
+                    locationFeedback.innerHTML = '';
+                    this.disabled = false;
+                    this.innerHTML = 'Save Location';
+                    
+                    // Reload page to show new location (in production, you would update the UI without reloading)
+                    // setTimeout(() => {
+                    //     window.location.reload();
+                    // }, 1500);
+                }, 1500);
+            });
+        }
+        
+        // Delete location buttons
+        const deleteLocationBtns = document.querySelectorAll('.delete-location-btn');
+        
+        deleteLocationBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const locationId = this.dataset.id;
+                
+                if (confirm('Are you sure you want to delete this location?')) {
+                    // Show loading state
+                    this.disabled = true;
+                    this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+                    
+                    // Simulate API call
+                    setTimeout(() => {
+                        // Remove row from table
+                        this.closest('tr').remove();
+                        
+                        // Show success message
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                        alertDiv.innerHTML = `
+                            <i class="fas fa-check-circle me-2"></i>
+                            Location deleted successfully.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        `;
+                        document.querySelector('.tab-content').prepend(alertDiv);
+                        
+                        // Check if table is empty
+                        const tbody = document.querySelector('.table tbody');
+                        if (tbody && tbody.children.length === 0) {
+                            const locationsTab = document.getElementById('locations');
+                            locationsTab.querySelector('.card-body').innerHTML = `
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h4 class="card-title mb-0">Saved Locations</h4>
+                                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addLocationModal">
+                                        <i class="fas fa-plus me-2"></i>Add Location
+                                    </button>
+                                </div>
+                                <div class="text-center py-5">
+                                    <div class="mb-3">
+                                        <i class="fas fa-map-marked-alt fs-1 text-muted"></i>
+                                    </div>
+                                    <p>You haven't saved any locations yet.</p>
+                                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addLocationModal">
+                                        <i class="fas fa-plus me-2"></i>Add Location
+                                    </button>
+                                </div>
+                            `;
+                        }
+                    }, 1000);
+                }
+            });
+        });
+        
+        // Set default location buttons
+        const setDefaultBtns = document.querySelectorAll('.set-default-btn');
+        
+        setDefaultBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const locationId = this.dataset.id;
+                
+                // Show loading state
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+                
+                // Simulate API call
+                setTimeout(() => {
+                    // Reset all default badges
+                    document.querySelectorAll('.badge.bg-success').forEach(badge => {
+                        const parent = badge.parentElement;
+                        parent.innerHTML = `
+                            <button class="btn btn-sm btn-outline-primary set-default-btn" data-id="${badge.closest('tr').querySelector('.set-default-btn')?.dataset.id || ''}">
+                                Set Default
+                            </button>
+                        `;
+                    });
+                    
+                    // Set this location as default
+                    this.parentElement.innerHTML = '<span class="badge bg-success">Default</span>';
+                    
+                    // Show success message
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                    alertDiv.innerHTML = `
+                        <i class="fas fa-check-circle me-2"></i>
+                        Default location updated successfully.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `;
+                    document.querySelector('.tab-content').prepend(alertDiv);
+                    
+                    // Re-bind event listeners to new buttons
+                    document.querySelectorAll('.set-default-btn').forEach(newBtn => {
+                        newBtn.addEventListener('click', arguments.callee);
+                    });
+                }, 1000);
+            });
+        });
+        
+        // Delete account confirmation
+        const deleteConfirmationInput = document.getElementById('deleteConfirmation');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        
+        if (deleteConfirmationInput && confirmDeleteBtn) {
+            deleteConfirmationInput.addEventListener('input', function() {
+                confirmDeleteBtn.disabled = this.value !== 'DELETE';
+            });
+            
+            confirmDeleteBtn.addEventListener('click', function() {
+                if (deleteConfirmationInput.value === 'DELETE') {
+                    // Show loading state
+                    this.disabled = true;
+                    this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Deleting...';
+                    
+                    // Simulate API call
+                    setTimeout(() => {
+                        // Redirect to login page
+                        window.location.href = "{{ url_for('main.login') }}";
+                    }, 2000);
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

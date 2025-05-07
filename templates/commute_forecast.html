@@ -1,0 +1,437 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-body p-5">
+                    <h1 class="card-title text-center mb-4">
+                        <i class="fas fa-car text-primary me-2"></i>Commute Weather Forecast
+                    </h1>
+                    <p class="lead text-center mb-5">Plan your journey with weather forecasts along your specific route</p>
+                    
+                    <div class="route-form mb-5">
+                        <div class="row g-3">
+                            <div class="col-md-5">
+                                <label for="startLocation" class="form-label">Starting Point</label>
+                                <div class="input-group mb-3">
+                                    <input type="text" class="form-control" id="startLocation" placeholder="Enter starting location">
+                                    <button class="btn btn-outline-secondary" type="button" id="startLocationBtn">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-5">
+                                <label for="endLocation" class="form-label">Destination</label>
+                                <div class="input-group mb-3">
+                                    <input type="text" class="form-control" id="endLocation" placeholder="Enter destination">
+                                    <button class="btn btn-outline-secondary" type="button" id="endLocationBtn">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-2">
+                                <label for="departureTime" class="form-label">Departure</label>
+                                <select class="form-select" id="departureTime">
+                                    <option value="now">Now</option>
+                                    <option value="30min">In 30 min</option>
+                                    <option value="1hour">In 1 hour</option>
+                                    <option value="2hours">In 2 hours</option>
+                                    <option value="4hours">In 4 hours</option>
+                                    <option value="tomorrow">Tomorrow</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-3">
+                            <button class="btn btn-primary" id="getCommuteBtn">
+                                <i class="fas fa-route me-2"></i>Get Commute Forecast
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="loadingCommute" class="text-center d-none">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Analyzing route and weather conditions...</p>
+                    </div>
+                    
+                    <div id="commuteResults" class="d-none">
+                        <div class="route-overview card mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">Route Overview</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="d-flex mb-3">
+                                            <div class="route-icon me-3">
+                                                <i class="fas fa-map-marked-alt fa-2x text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <div id="routeSummary" class="fs-5">From <span class="fw-bold">Starting Point</span> to <span class="fw-bold">Destination</span></div>
+                                                <div id="routeDistance" class="text-muted">Distance: Calculating...</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="d-flex mb-3">
+                                            <div class="route-icon me-3">
+                                                <i class="fas fa-clock fa-2x text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <div id="routeTime" class="fs-5">Estimated Travel Time: Calculating...</div>
+                                                <div id="routeArrival" class="text-muted">Expected arrival: Calculating...</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="d-flex">
+                                            <div class="route-icon me-3">
+                                                <i class="fas fa-cloud-sun-rain fa-2x text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <div id="weatherSummary" class="fs-5">Weather Impact: Analyzing...</div>
+                                                <div id="weatherImpact" class="text-muted">Overall conditions along your route</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="weather-impact-score text-center">
+                                            <div class="impact-circle mx-auto" id="impactCircle">
+                                                <span id="impactScore">--</span>
+                                            </div>
+                                            <div class="mt-2">Weather Impact Score</div>
+                                            <div id="impactText" class="text-muted small">Higher scores mean better conditions</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="route-timeline mb-4">
+                            <h5 class="mb-3">Journey Weather Timeline</h5>
+                            <div class="timeline-container" id="weatherTimeline">
+                                <div class="text-center py-5 text-muted">
+                                    Loading timeline...
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="recommendations">
+                            <h5 class="mb-3">Travel Recommendations</h5>
+                            <div class="card">
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush" id="commuteRecommendations">
+                                        <li class="list-group-item">
+                                            <i class="fas fa-lightbulb text-warning me-2"></i>Loading recommendations...
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.impact-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: conic-gradient(#4CAF50 0% 80%, #FFD54F 80% 90%, #F44336 90% 100%);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.impact-circle::before {
+    content: '';
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: white;
+}
+
+.impact-circle span {
+    position: relative;
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #2C3E50;
+}
+
+.timeline-container {
+    border: 1px solid #e9ecef;
+    border-radius: 0.25rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+}
+
+.timeline-item {
+    display: flex;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px dashed #ced4da;
+}
+
+.timeline-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.timeline-time {
+    min-width: 100px;
+    font-weight: bold;
+}
+
+.timeline-icon {
+    width: 60px;
+    display: flex;
+    justify-content: center;
+}
+
+.timeline-content {
+    flex-grow: 1;
+}
+
+.timeline-temp {
+    font-weight: bold;
+    margin-right: 1rem;
+}
+
+.route-icon {
+    width: 40px;
+    display: flex;
+    justify-content: center;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const startLocation = document.getElementById('startLocation');
+    const endLocation = document.getElementById('endLocation');
+    const startLocationBtn = document.getElementById('startLocationBtn');
+    const endLocationBtn = document.getElementById('endLocationBtn');
+    const departureTime = document.getElementById('departureTime');
+    const getCommuteBtn = document.getElementById('getCommuteBtn');
+    const loadingCommute = document.getElementById('loadingCommute');
+    const commuteResults = document.getElementById('commuteResults');
+    
+    // Default coordinates
+    let startLat = 40.7128;
+    let startLon = -74.0060;
+    let endLat = 40.7484;
+    let endLon = -73.9857;
+    
+    // Use current location for start
+    startLocationBtn.addEventListener('click', function() {
+        if (navigator.geolocation) {
+            startLocationBtn.disabled = true;
+            
+            navigator.geolocation.getCurrentPosition(function(position) {
+                startLat = position.coords.latitude;
+                startLon = position.coords.longitude;
+                
+                // Reverse geocode to get location name
+                fetch(`/api/reverse-geocode?lat=${startLat}&lon=${startLon}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            startLocation.value = data.location;
+                        }
+                        startLocationBtn.disabled = false;
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        startLocationBtn.disabled = false;
+                    });
+            }, function(error) {
+                console.error('Geolocation error:', error);
+                startLocationBtn.disabled = false;
+                alert('Unable to retrieve your location. Please enter it manually.');
+            });
+        } else {
+            alert('Geolocation is not supported by your browser. Please enter your location manually.');
+        }
+    });
+    
+    // Use current location for end
+    endLocationBtn.addEventListener('click', function() {
+        if (navigator.geolocation) {
+            endLocationBtn.disabled = true;
+            
+            navigator.geolocation.getCurrentPosition(function(position) {
+                endLat = position.coords.latitude;
+                endLon = position.coords.longitude;
+                
+                // Reverse geocode to get location name
+                fetch(`/api/reverse-geocode?lat=${endLat}&lon=${endLon}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            endLocation.value = data.location;
+                        }
+                        endLocationBtn.disabled = false;
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        endLocationBtn.disabled = false;
+                    });
+            }, function(error) {
+                console.error('Geolocation error:', error);
+                endLocationBtn.disabled = false;
+                alert('Unable to retrieve your location. Please enter it manually.');
+            });
+        } else {
+            alert('Geolocation is not supported by your browser. Please enter your location manually.');
+        }
+    });
+    
+    // Get commute forecast
+    getCommuteBtn.addEventListener('click', function() {
+        if (!startLocation.value.trim() || !endLocation.value.trim()) {
+            alert('Please enter both starting point and destination.');
+            return;
+        }
+        
+        loadingCommute.classList.remove('d-none');
+        commuteResults.classList.add('d-none');
+        getCommuteBtn.disabled = true;
+        
+        // Geocode start location if needed
+        const startPromise = startLocation.dataset.geocoded ? 
+            Promise.resolve() : 
+            fetch(`/api/geocode?location=${encodeURIComponent(startLocation.value.trim())}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        startLat = data.lat;
+                        startLon = data.lon;
+                        startLocation.dataset.geocoded = true;
+                    } else {
+                        throw new Error('Starting location not found');
+                    }
+                });
+        
+        // Geocode end location if needed
+        const endPromise = endLocation.dataset.geocoded ? 
+            Promise.resolve() : 
+            fetch(`/api/geocode?location=${encodeURIComponent(endLocation.value.trim())}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        endLat = data.lat;
+                        endLon = data.lon;
+                        endLocation.dataset.geocoded = true;
+                    } else {
+                        throw new Error('Destination not found');
+                    }
+                });
+        
+        // Get commute forecast after geocoding
+        Promise.all([startPromise, endPromise])
+            .then(() => {
+                return fetch(`/api/commute?start_lat=${startLat}&start_lon=${startLon}&end_lat=${endLat}&end_lon=${endLon}&departure=${departureTime.value}`)
+                    .then(response => response.json());
+            })
+            .then(data => {
+                if (data.success) {
+                    // Update route summary
+                    document.getElementById('routeSummary').innerHTML = `From <span class="fw-bold">${data.route.start_location}</span> to <span class="fw-bold">${data.route.end_location}</span>`;
+                    document.getElementById('routeDistance').textContent = `Distance: ${data.route.distance}`;
+                    document.getElementById('routeTime').textContent = `Estimated Travel Time: ${data.route.travel_time}`;
+                    document.getElementById('routeArrival').textContent = `Expected arrival: ${data.route.arrival_time}`;
+                    document.getElementById('weatherSummary').textContent = `Weather Impact: ${data.route.weather_summary}`;
+                    document.getElementById('weatherImpact').textContent = data.route.weather_impact;
+                    
+                    // Update impact score
+                    document.getElementById('impactScore').textContent = data.route.impact_score;
+                    document.getElementById('impactText').textContent = data.route.impact_description;
+                    
+                    // Calculate gradient based on score
+                    const score = parseInt(data.route.impact_score);
+                    let gradient;
+                    
+                    if (score >= 80) {
+                        gradient = `conic-gradient(#4CAF50 0% 100%)`;
+                    } else if (score >= 60) {
+                        gradient = `conic-gradient(#4CAF50 0% ${score}%, #FFD54F ${score}% 100%)`;
+                    } else if (score >= 40) {
+                        gradient = `conic-gradient(#FFD54F 0% ${score}%, #F44336 ${score}% 100%)`;
+                    } else {
+                        gradient = `conic-gradient(#F44336 0% 100%)`;
+                    }
+                    
+                    document.getElementById('impactCircle').style.background = gradient;
+                    
+                    // Update timeline
+                    const timelineContainer = document.getElementById('weatherTimeline');
+                    timelineContainer.innerHTML = '';
+                    
+                    data.timeline.forEach(item => {
+                        const timelineItem = document.createElement('div');
+                        timelineItem.className = 'timeline-item';
+                        
+                        timelineItem.innerHTML = `
+                            <div class="timeline-time">${item.time}</div>
+                            <div class="timeline-icon">
+                                <i class="fas ${item.icon} fa-2x ${item.icon.includes('sun') ? 'text-warning' : item.icon.includes('cloud') ? 'text-secondary' : item.icon.includes('rain') ? 'text-primary' : 'text-info'}"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <div>
+                                    <span class="timeline-temp">${item.temp}°C</span>
+                                    <span class="timeline-condition">${item.condition}</span>
+                                </div>
+                                <div class="text-muted small">${item.location}</div>
+                            </div>
+                        `;
+                        
+                        timelineContainer.appendChild(timelineItem);
+                    });
+                    
+                    // Update recommendations
+                    const recommendationsContainer = document.getElementById('commuteRecommendations');
+                    recommendationsContainer.innerHTML = '';
+                    
+                    data.recommendations.forEach(recommendation => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item';
+                        li.innerHTML = `<i class="fas fa-lightbulb text-warning me-2"></i>${recommendation}`;
+                        recommendationsContainer.appendChild(li);
+                    });
+                    
+                    commuteResults.classList.remove('d-none');
+                } else {
+                    alert('Could not generate commute forecast. Please try again.');
+                }
+                
+                loadingCommute.classList.add('d-none');
+                getCommuteBtn.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                loadingCommute.classList.add('d-none');
+                getCommuteBtn.disabled = false;
+                alert('An error occurred: ' + error.message);
+            });
+    });
+    
+    // Check if geocoded already when input changes
+    startLocation.addEventListener('input', () => {
+        delete startLocation.dataset.geocoded;
+    });
+    
+    endLocation.addEventListener('input', () => {
+        delete endLocation.dataset.geocoded;
+    });
+});
+</script>
+{% endblock %}

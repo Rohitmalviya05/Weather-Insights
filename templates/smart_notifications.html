@@ -1,0 +1,464 @@
+{% extends "base.html" %}
+
+{% block title %}Smart Notifications - Weather Insights{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-4 fw-bold mb-3">Smart Weather Notifications</h1>
+                <p class="lead">Receive timely alerts about important weather changes that affect your daily life.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notification Content -->
+<div class="container my-5">
+    <div class="row">
+        <!-- Notification Settings -->
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <h4 class="card-title mb-4">Notification Settings</h4>
+                    
+                    {% if current_user.is_authenticated %}
+                    <form id="notificationSettingsForm">
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="enableNotifications" {% if current_user.preferences.notification_enabled %}checked{% endif %}>
+                                <label class="form-check-label" for="enableNotifications">
+                                    <strong>Enable Notifications</strong>
+                                </label>
+                            </div>
+                            <div class="form-text">Receive personalized weather alerts</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Notification Methods</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="notifyEmail" checked>
+                                <label class="form-check-label" for="notifyEmail">
+                                    Email ({{ current_user.email }})
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="notifySMS">
+                                <label class="form-check-label" for="notifySMS">
+                                    SMS Text Message
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="notifyPush" checked>
+                                <label class="form-check-label" for="notifyPush">
+                                    Push Notification (Browser)
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4" id="phoneNumberContainer" style="display: none;">
+                            <label class="form-label fw-bold" for="phoneNumber">Phone Number</label>
+                            <input type="tel" class="form-control" id="phoneNumber" placeholder="+1 (555) 123-4567">
+                            <div class="form-text">Enter your number to receive SMS alerts</div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <h5 class="mb-3">Alert Types</h5>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="alertSevere" checked>
+                                <label class="form-check-label" for="alertSevere">
+                                    <strong>Severe Weather</strong>
+                                </label>
+                            </div>
+                            <div class="form-text">Storms, extreme temperatures, high winds</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="alertPrecipitation" checked>
+                                <label class="form-check-label" for="alertPrecipitation">
+                                    <strong>Precipitation</strong>
+                                </label>
+                            </div>
+                            <div class="form-text">Rain, snow, or other precipitation events</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="alertTemperature" checked>
+                                <label class="form-check-label" for="alertTemperature">
+                                    <strong>Temperature Changes</strong>
+                                </label>
+                            </div>
+                            <div class="form-text">Significant temperature increases or drops</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="alertDailyForecast" checked>
+                                <label class="form-check-label" for="alertDailyForecast">
+                                    <strong>Daily Forecast</strong>
+                                </label>
+                            </div>
+                            <div class="form-text">Morning summary of the day's weather</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="alertActivity">
+                                <label class="form-check-label" for="alertActivity">
+                                    <strong>Activity Recommendations</strong>
+                                </label>
+                            </div>
+                            <div class="form-text">Ideal conditions for outdoor activities</div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold" for="locationSelect">Default Location</label>
+                            <select class="form-select" id="locationSelect">
+                                <option value="current">Current Location</option>
+                                {% for favorite in current_user.favorite_locations %}
+                                <option value="{{ favorite.id }}" {% if favorite.is_default %}selected{% endif %}>
+                                    {{ favorite.location_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <button type="button" class="btn btn-primary w-100" id="saveNotificationSettings">
+                            <i class="fas fa-save me-2"></i>Save Settings
+                        </button>
+                    </form>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <a href="{{ url_for('main.login') }}" class="alert-link">Log in</a> or 
+                        <a href="{{ url_for('main.signup') }}" class="alert-link">sign up</a> to personalize your notification settings.
+                    </div>
+                    
+                    <div class="text-center py-4">
+                        <i class="fas fa-bell fs-1 text-primary mb-3"></i>
+                        <p>Create an account to receive personalized weather alerts based on your preferences and locations.</p>
+                        <a href="{{ url_for('main.signup') }}" class="btn btn-primary mt-2">
+                            <i class="fas fa-user-plus me-2"></i>Create Account
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Current Notifications -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="card-title mb-0">Current Notifications</h4>
+                        <div>
+                            <button class="btn btn-sm btn-outline-primary" id="refreshNotificationsBtn">
+                                <i class="fas fa-sync-alt me-1"></i>Refresh
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary ms-2" id="clearAllNotificationsBtn">
+                                <i class="fas fa-trash-alt me-1"></i>Clear All
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="notificationsContainer">
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-3">Loading notifications...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SMS Notifications Section -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h4 class="card-title mb-4">SMS Weather Alerts</h4>
+                    
+                    <div class="row">
+                        <div class="col-lg-7">
+                            <p>Stay informed with SMS weather alerts delivered directly to your phone. Get timely updates about:</p>
+                            
+                            <ul class="list-group list-group-flush mb-4">
+                                <li class="list-group-item bg-transparent ps-0">
+                                    <i class="fas fa-bolt text-warning me-2"></i>
+                                    <strong>Severe Weather Events</strong> - Storms, high winds, extreme temperatures
+                                </li>
+                                <li class="list-group-item bg-transparent ps-0">
+                                    <i class="fas fa-cloud-rain text-primary me-2"></i>
+                                    <strong>Precipitation Alerts</strong> - Rain, snow, or sudden downpours
+                                </li>
+                                <li class="list-group-item bg-transparent ps-0">
+                                    <i class="fas fa-thermometer-half text-danger me-2"></i>
+                                    <strong>Temperature Changes</strong> - Significant temperature shifts
+                                </li>
+                                <li class="list-group-item bg-transparent ps-0">
+                                    <i class="fas fa-calendar-day text-success me-2"></i>
+                                    <strong>Daily Forecasts</strong> - Morning summaries of the day's weather
+                                </li>
+                            </ul>
+                            
+                            {% if current_user.is_authenticated %}
+                            <div class="alert alert-primary" role="alert">
+                                <div class="d-flex">
+                                    <div class="me-3">
+                                        <i class="fas fa-mobile-alt fs-2"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="alert-heading">Get Started with SMS Alerts</h5>
+                                        <p class="mb-0">Enable SMS notifications in your settings and enter your phone number to start receiving alerts.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-info" role="alert">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <a href="{{ url_for('main.signup') }}" class="alert-link">Create an account</a> to set up SMS weather alerts.
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-lg-5">
+                            <div class="sms-preview px-4 py-4 bg-light rounded">
+                                <div class="phone-header d-flex justify-content-between mb-3">
+                                    <div>9:41 AM</div>
+                                    <div>
+                                        <i class="fas fa-signal"></i>
+                                        <i class="fas fa-wifi ms-1"></i>
+                                        <i class="fas fa-battery-full ms-1"></i>
+                                    </div>
+                                </div>
+                                
+                                <div class="message-bubble bg-primary text-white p-3 rounded mb-3">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <strong>Weather Insights</strong>
+                                        <small>Now</small>
+                                    </div>
+                                    <p class="mb-0">⚠️ ALERT: Thunderstorm expected in London tonight. Heavy rain and winds of 30mph between 8-10 PM. Stay safe!</p>
+                                </div>
+                                
+                                <div class="message-bubble bg-primary text-white p-3 rounded">
+                                    <div class="d-flex justify-content-between mb-1">
+                                        <strong>Weather Insights</strong>
+                                        <small>8:05 AM</small>
+                                    </div>
+                                    <p class="mb-0">Good morning! Today's forecast for London: High of 18°C, partly cloudy with a 20% chance of afternoon showers. Have a great day!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle SMS phone number input visibility
+        const notifySMS = document.getElementById('notifySMS');
+        const phoneNumberContainer = document.getElementById('phoneNumberContainer');
+        
+        if (notifySMS) {
+            notifySMS.addEventListener('change', function() {
+                phoneNumberContainer.style.display = this.checked ? 'block' : 'none';
+            });
+        }
+        
+        // Save notification settings
+        const saveNotificationSettings = document.getElementById('saveNotificationSettings');
+        
+        if (saveNotificationSettings) {
+            saveNotificationSettings.addEventListener('click', function() {
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Saving...';
+                
+                // Simulate saving (replace with actual API call in production)
+                setTimeout(() => {
+                    this.innerHTML = '<i class="fas fa-check me-2"></i>Settings Saved';
+                    
+                    setTimeout(() => {
+                        this.disabled = false;
+                        this.innerHTML = '<i class="fas fa-save me-2"></i>Save Settings';
+                    }, 2000);
+                }, 1500);
+            });
+        }
+        
+        // Load notifications
+        loadNotifications();
+        
+        // Refresh notifications button
+        const refreshNotificationsBtn = document.getElementById('refreshNotificationsBtn');
+        
+        if (refreshNotificationsBtn) {
+            refreshNotificationsBtn.addEventListener('click', function() {
+                this.disabled = true;
+                const originalHTML = this.innerHTML;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+                
+                loadNotifications();
+                
+                setTimeout(() => {
+                    this.disabled = false;
+                    this.innerHTML = originalHTML;
+                }, 1000);
+            });
+        }
+        
+        // Clear all notifications button
+        const clearAllNotificationsBtn = document.getElementById('clearAllNotificationsBtn');
+        
+        if (clearAllNotificationsBtn) {
+            clearAllNotificationsBtn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to clear all notifications?')) {
+                    const notificationsContainer = document.getElementById('notificationsContainer');
+                    notificationsContainer.innerHTML = `
+                        <div class="text-center py-5">
+                            <i class="fas fa-bell-slash fs-1 text-muted mb-3"></i>
+                            <p>No notifications available</p>
+                        </div>
+                    `;
+                }
+            });
+        }
+    });
+    
+    function loadNotifications() {
+        const notificationsContainer = document.getElementById('notificationsContainer');
+        
+        // First show loading state
+        notificationsContainer.innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3">Loading notifications...</p>
+            </div>
+        `;
+        
+        // Get current location
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                
+                // Fetch notifications from API
+                fetch(`/api/smart-notifications?lat=${lat}&lon=${lon}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            notificationsContainer.innerHTML = `
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-exclamation-circle me-2"></i>${data.error}
+                                </div>
+                            `;
+                            console.error("API Error:", data);
+                            return;
+                        }
+                        
+                        if (data.notifications && data.notifications.length > 0) {
+                            let notificationsHTML = '';
+                            
+                            data.notifications.forEach(notification => {
+                                const priorityClass = 
+                                    notification.priority === 'urgent' ? 'border-danger' : 
+                                    notification.priority === 'important' ? 'border-warning' : 'border-info';
+                                
+                                const priorityBadge = 
+                                    notification.priority === 'urgent' ? '<span class="badge bg-danger">Urgent</span>' : 
+                                    notification.priority === 'important' ? '<span class="badge bg-warning text-dark">Important</span>' : '<span class="badge bg-info text-white">Info</span>';
+                                
+                                notificationsHTML += `
+                                    <div class="card mb-3 notification-card ${priorityClass}" style="border-left-width: 5px;">
+                                        <div class="card-body p-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h5 class="card-title mb-0">
+                                                    <i class="fas fa-${notification.icon || 'bell'} me-2"></i>${notification.title}
+                                                </h5>
+                                                ${priorityBadge}
+                                            </div>
+                                            <p class="card-text">${notification.message}</p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <small class="text-muted">${notification.time}</small>
+                                                <button class="btn btn-sm btn-outline-secondary dismiss-notification" data-id="${notification.id}">
+                                                    <i class="fas fa-times me-1"></i>Dismiss
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            
+                            notificationsContainer.innerHTML = notificationsHTML;
+                            
+                            // Add event listeners to dismiss buttons
+                            document.querySelectorAll('.dismiss-notification').forEach(button => {
+                                button.addEventListener('click', function() {
+                                    const notificationId = this.getAttribute('data-id');
+                                    const card = this.closest('.notification-card');
+                                    
+                                    // Animate removal
+                                    card.style.transition = 'opacity 0.3s, transform 0.3s';
+                                    card.style.opacity = '0';
+                                    card.style.transform = 'translateX(10px)';
+                                    
+                                    setTimeout(() => {
+                                        card.remove();
+                                        
+                                        // If no notifications left, show empty state
+                                        if (document.querySelectorAll('.notification-card').length === 0) {
+                                            notificationsContainer.innerHTML = `
+                                                <div class="text-center py-5">
+                                                    <i class="fas fa-bell-slash fs-1 text-muted mb-3"></i>
+                                                    <p>No notifications available</p>
+                                                </div>
+                                            `;
+                                        }
+                                    }, 300);
+                                });
+                            });
+                        } else {
+                            notificationsContainer.innerHTML = `
+                                <div class="text-center py-5">
+                                    <i class="fas fa-bell-slash fs-1 text-muted mb-3"></i>
+                                    <p>No notifications available</p>
+                                </div>
+                            `;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching notifications:', error);
+                        notificationsContainer.innerHTML = `
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-circle me-2"></i>Failed to load notifications. Please try again later.
+                            </div>
+                        `;
+                    });
+            },
+            function(error) {
+                console.error('Geolocation error:', error);
+                notificationsContainer.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-map-marker-alt me-2"></i>Please allow location access to see relevant weather notifications.
+                    </div>
+                `;
+            }
+        );
+    }
+</script>
+{% endblock %}

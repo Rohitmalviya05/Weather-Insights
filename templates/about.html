@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}About - Weather Insights{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-5">
+        <div class="col-md-8 mx-auto text-center">
+            <i class="fas fa-cloud-sun display-1 text-primary mb-4"></i>
+            <h1 class="display-4 mb-4">About Weather Insights</h1>
+            <p class="lead">Weather Insights is a comprehensive weather platform providing accurate forecasts, historical data, and personalized recommendations to help you plan your day.</p>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-md-6">
+            <h2 class="mb-4">Our Mission</h2>
+            <p>At Weather Insights, our mission is to provide the most accurate, reliable, and personalized weather information to help people make informed decisions about their daily activities.</p>
+            <p>We believe that everyone should have access to high-quality weather data that is easy to understand and relevant to their specific needs.</p>
+        </div>
+        <div class="col-md-6">
+            <h2 class="mb-4">Our Approach</h2>
+            <p>We combine data from multiple trusted weather sources, advanced forecasting models, and historical weather patterns to deliver the most accurate predictions possible.</p>
+            <p>Our team of meteorologists and data scientists work continuously to improve our forecasts and develop new features that address the unique needs of our users.</p>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card bg-primary text-white mb-4">
+                <div class="card-body">
+                    <h2 class="card-title">Key Features</h2>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex">
+                                <div>
+                                    <i class="fas fa-map-marked-alt fa-2x me-3"></i>
+                                </div>
+                                <div>
+                                    <h5>Hyper-Local Forecasts</h5>
+                                    <p class="mb-0">Neighborhood-level weather predictions that account for micro-climate variations.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex">
+                                <div>
+                                    <i class="fas fa-heartbeat fa-2x me-3"></i>
+                                </div>
+                                <div>
+                                    <h5>Health Alerts</h5>
+                                    <p class="mb-0">Personalized weather-related health alerts based on your conditions.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex">
+                                <div>
+                                    <i class="fas fa-tshirt fa-2x me-3"></i>
+                                </div>
+                                <div>
+                                    <h5>Clothing Recommendations</h5>
+                                    <p class="mb-0">AI-powered clothing and gear recommendations for all weather.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-md-6">
+            <h2 class="mb-4">Our Technology</h2>
+            <p>Weather Insights is built on a modern technology stack that includes:</p>
+            <ul>
+                <li>Advanced meteorological forecasting models</li>
+                <li>Machine learning algorithms for personalized recommendations</li>
+                <li>Real-time data processing for up-to-the-minute accuracy</li>
+                <li>Interactive visualizations for better understanding</li>
+                <li>Responsive design for any device or screen size</li>
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <h2 class="mb-4">Our Data Sources</h2>
+            <p>We source our weather data from several trusted providers, including:</p>
+            <ul>
+                <li>OpenWeatherMap for current conditions and forecasts</li>
+                <li>National weather services for alerts and warnings</li>
+                <li>Weather station networks for ground-truth observations</li>
+                <li>Satellite imagery for large-scale weather patterns</li>
+                <li>Historical archives for trend analysis and comparison</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-md-8 mx-auto text-center">
+            <h2 class="mb-4">Meet Our Team</h2>
+            <p class="lead mb-5">Our diverse team of meteorologists, data scientists, and developers work together to bring you the best weather experience.</p>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-circle display-1 text-primary mb-3"></i>
+                    <h4>Dr. Sarah Johnson</h4>
+                    <p class="text-muted">Chief Meteorologist</p>
+                    <p>PhD in Atmospheric Sciences with 15 years of experience in weather forecasting and research.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-circle display-1 text-primary mb-3"></i>
+                    <h4>Michael Chen</h4>
+                    <p class="text-muted">Lead Data Scientist</p>
+                    <p>Expert in machine learning and predictive modeling with a focus on weather pattern recognition.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-circle display-1 text-primary mb-3"></i>
+                    <h4>Aisha Patel</h4>
+                    <p class="text-muted">UX/UI Designer</p>
+                    <p>Specializes in creating intuitive and accessible user interfaces for complex data visualization.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h2 class="mb-4">Contact Us</h2>
+            <p class="lead">Have questions, feedback, or suggestions? We'd love to hear from you!</p>
+            <a href="{{ url_for('main.feedback') }}" class="btn btn-primary btn-lg mt-3">
+                <i class="fas fa-comment-alt me-2"></i> Send Feedback
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

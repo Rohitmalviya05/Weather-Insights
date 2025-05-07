@@ -1,0 +1,613 @@
+{% extends "base.html" %}
+
+{% block title %}Custom Widgets & API - Weather Insights{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-4 fw-bold mb-3">Custom Widgets & API</h1>
+                <p class="lead">Integrate Weather Insights data into your websites, applications, or dashboards.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Widgets Section -->
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <h4 class="card-title mb-4">Widget Generator</h4>
+                    
+                    <form id="widgetForm">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Widget Type</label>
+                            <select class="form-select" id="widgetType">
+                                <option value="current">Current Weather</option>
+                                <option value="forecast">Forecast (5-day)</option>
+                                <option value="hourly">Hourly Forecast</option>
+                                <option value="uv">UV Index</option>
+                                <option value="air-quality">Air Quality</option>
+                                <option value="alerts">Weather Alerts</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Location</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="widgetLocation" placeholder="Enter a location">
+                                <button class="btn btn-outline-secondary" type="button" id="widgetLocationBtn">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                            <div class="form-text" id="widgetLocationFeedback"></div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Theme</label>
+                            <div class="d-flex">
+                                <div class="form-check me-3">
+                                    <input class="form-check-input" type="radio" name="widgetTheme" id="themeLight" value="light" checked>
+                                    <label class="form-check-label" for="themeLight">
+                                        Light
+                                    </label>
+                                </div>
+                                <div class="form-check me-3">
+                                    <input class="form-check-input" type="radio" name="widgetTheme" id="themeDark" value="dark">
+                                    <label class="form-check-label" for="themeDark">
+                                        Dark
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="widgetTheme" id="themeAuto" value="auto">
+                                    <label class="form-check-label" for="themeAuto">
+                                        Auto
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Units</label>
+                            <div class="d-flex">
+                                <div class="form-check me-3">
+                                    <input class="form-check-input" type="radio" name="widgetUnits" id="unitMetric" value="metric" checked>
+                                    <label class="form-check-label" for="unitMetric">
+                                        Metric (°C)
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="widgetUnits" id="unitImperial" value="imperial">
+                                    <label class="form-check-label" for="unitImperial">
+                                        Imperial (°F)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Size</label>
+                            <select class="form-select" id="widgetSize">
+                                <option value="small">Small</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="large">Large</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3 d-none" id="customSizeContainer">
+                            <div class="row">
+                                <div class="col">
+                                    <label class="form-label">Width (px)</label>
+                                    <input type="number" class="form-control" id="widgetWidth" value="300" min="100" max="1000">
+                                </div>
+                                <div class="col">
+                                    <label class="form-label">Height (px)</label>
+                                    <input type="number" class="form-control" id="widgetHeight" value="200" min="100" max="1000">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Auto Refresh</label>
+                            <select class="form-select" id="widgetRefresh">
+                                <option value="0">No auto refresh</option>
+                                <option value="300" selected>Every 5 minutes</option>
+                                <option value="600">Every 10 minutes</option>
+                                <option value="1800">Every 30 minutes</option>
+                                <option value="3600">Every hour</option>
+                            </select>
+                        </div>
+                        
+                        <button type="button" class="btn btn-primary w-100" id="generateWidgetBtn">
+                            <i class="fas fa-code me-2"></i>Generate Widget
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-8">
+            <!-- Widget Preview -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h4 class="card-title mb-4">Widget Preview</h4>
+                    
+                    <div class="widget-preview rounded mb-4" id="widgetPreview">
+                        <div class="text-center py-5">
+                            <div class="mb-3">
+                                <i class="fas fa-cloud-sun fs-1 text-primary"></i>
+                            </div>
+                            <p>Configure your widget using the options on the left and click "Generate Widget"</p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-none" id="widgetCodeContainer">
+                        <h5 class="mb-3">Embed Code</h5>
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <textarea class="form-control font-monospace" id="widgetEmbedCode" rows="5" readonly></textarea>
+                                <button class="btn btn-outline-secondary" type="button" id="copyWidgetCodeBtn">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">Copy and paste this code into your website to embed the widget.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- API Documentation -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="card-title mb-0">REST API Documentation</h4>
+                        <a href="#" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#apiKeyModal">
+                            <i class="fas fa-key me-1"></i>Get API Key
+                        </a>
+                    </div>
+                    
+                    <div class="api-docs">
+                        <div class="mb-4">
+                            <p>Weather Insights provides a comprehensive RESTful API to integrate weather data into your applications. All API endpoints require an API key for authentication.</p>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5 class="mb-3">Base URL</h5>
+                            <div class="bg-light p-3 rounded font-monospace">
+                                https://api.weatherinsights.example/v1
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5 class="mb-3">Authentication</h5>
+                            <p>Add your API key to all requests as a query parameter:</p>
+                            <div class="bg-light p-3 rounded font-monospace">
+                                ?api_key=YOUR_API_KEY
+                            </div>
+                        </div>
+                        
+                        <h5 class="mb-3">Endpoints</h5>
+                        
+                        <!-- Current Weather Endpoint -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-success me-2">GET</span>
+                                    <span class="font-monospace">/weather</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h6>Current Weather</h6>
+                                <p>Returns current weather data for a specific location.</p>
+                                
+                                <h6 class="mt-3">Parameters</h6>
+                                <ul class="list-group list-group-flush mb-3">
+                                    <li class="list-group-item bg-transparent px-0 py-2">
+                                        <strong>lat</strong> (required) - Latitude component of location
+                                    </li>
+                                    <li class="list-group-item bg-transparent px-0 py-2">
+                                        <strong>lon</strong> (required) - Longitude component of location
+                                    </li>
+                                    <li class="list-group-item bg-transparent px-0 py-2">
+                                        <strong>units</strong> (optional) - Units of measurement. Options: <code>metric</code> (default), <code>imperial</code>
+                                    </li>
+                                </ul>
+                                
+                                <h6>Example Request</h6>
+                                <div class="bg-light p-2 rounded font-monospace small mb-3">
+                                    GET /weather?lat=51.5074&lon=-0.1278&units=metric&api_key=YOUR_API_KEY
+                                </div>
+                                
+                                <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#weatherResponseExample" aria-expanded="false" aria-controls="weatherResponseExample">
+                                    View Example Response
+                                </button>
+                                
+                                <div class="collapse mt-2" id="weatherResponseExample">
+                                    <div class="bg-light p-2 rounded font-monospace small">
+<pre>{
+  "name": "London",
+  "country": "GB",
+  "lat": 51.5074,
+  "lon": -0.1278,
+  "timezone": 3600,
+  "weather": {
+    "temp": 15.2,
+    "feels_like": 14.8,
+    "temp_min": 13.9,
+    "temp_max": 16.1,
+    "pressure": 1013,
+    "humidity": 76,
+    "description": "Partly Cloudy",
+    "main": "Clouds",
+    "icon": "03d",
+    "wind_speed": 5.2,
+    "wind_deg": 240,
+    "visibility": 10000,
+    "uv_index": 3,
+    "air_quality_index": 28
+  },
+  "sys": {
+    "sunrise": 1620537600,
+    "sunset": 1620590400
+  },
+  "dt": 1620561300
+}</pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Forecast Endpoint -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-success me-2">GET</span>
+                                    <span class="font-monospace">/forecast</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h6>Weather Forecast</h6>
+                                <p>Returns 5-day weather forecast with data points every 3 hours.</p>
+                                
+                                <h6 class="mt-3">Parameters</h6>
+                                <ul class="list-group list-group-flush mb-3">
+                                    <li class="list-group-item bg-transparent px-0 py-2">
+                                        <strong>lat</strong> (required) - Latitude component of location
+                                    </li>
+                                    <li class="list-group-item bg-transparent px-0 py-2">
+                                        <strong>lon</strong> (required) - Longitude component of location
+                                    </li>
+                                    <li class="list-group-item bg-transparent px-0 py-2">
+                                        <strong>units</strong> (optional) - Units of measurement. Options: <code>metric</code> (default), <code>imperial</code>
+                                    </li>
+                                </ul>
+                                
+                                <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#forecastResponseExample" aria-expanded="false" aria-controls="forecastResponseExample">
+                                    View Example Response
+                                </button>
+                                
+                                <div class="collapse mt-2" id="forecastResponseExample">
+                                    <div class="bg-light p-2 rounded font-monospace small">
+<pre>{
+  "city": {
+    "name": "London",
+    "country": "GB",
+    "lat": 51.5074,
+    "lon": -0.1278,
+    "timezone": 3600
+  },
+  "list": [
+    {
+      "dt": 1620561600,
+      "main": {
+        "temp": 15.2,
+        "feels_like": 14.8,
+        "temp_min": 13.9,
+        "temp_max": 16.1,
+        "pressure": 1013,
+        "humidity": 76
+      },
+      "weather": {
+        "description": "Partly Cloudy",
+        "main": "Clouds",
+        "icon": "03d"
+      },
+      "wind": {
+        "speed": 5.2,
+        "deg": 240
+      },
+      "visibility": 10000,
+      "pop": 0.1
+    },
+    // Additional forecast data points...
+  ]
+}</pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- More API Endpoints -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-success me-2">GET</span>
+                                    <span class="font-monospace">/health-alerts</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h6>Health Alerts</h6>
+                                <p>Returns health-related weather alerts based on location and conditions.</p>
+                                
+                                <h6 class="mt-3">Parameters</h6>
+                                <ul class="list-group list-group-flush mb-3">
+                                    <li class="list-group-item bg-transparent px-0 py-2">
+                                        <strong>lat</strong> (required) - Latitude component of location
+                                    </li>
+                                    <li class="list-group-item bg-transparent px-0 py-2">
+                                        <strong>lon</strong> (required) - Longitude component of location
+                                    </li>
+                                    <li class="list-group-item bg-transparent px-0 py-2">
+                                        <strong>age_group</strong> (optional) - Age group for targeted alerts. Options: <code>child</code>, <code>adult</code> (default), <code>senior</code>
+                                    </li>
+                                    <li class="list-group-item bg-transparent px-0 py-2">
+                                        <strong>conditions</strong> (optional) - Comma-separated health conditions to receive specific alerts
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <p class="mb-3">For detailed documentation and examples for all endpoints, visit our developer portal.</p>
+                            <a href="#" class="btn btn-primary">
+                                <i class="fas fa-book me-2"></i>Full API Documentation
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API Key Modal -->
+<div class="modal fade" id="apiKeyModal" tabindex="-1" aria-labelledby="apiKeyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="apiKeyModalLabel">Get an API Key</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>To use our Weather Insights API, you'll need to register for an API key. This key will allow you to make authenticated requests to our API endpoints.</p>
+                
+                <form id="apiKeyForm">
+                    <div class="mb-3">
+                        <label for="apiKeyName" class="form-label">Application Name</label>
+                        <input type="text" class="form-control" id="apiKeyName" placeholder="My Weather App">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="apiKeyEmail" class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="apiKeyEmail" placeholder="you@example.com">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="apiKeyUsage" class="form-label">Intended Usage</label>
+                        <select class="form-select" id="apiKeyUsage">
+                            <option value="personal">Personal Project</option>
+                            <option value="educational">Educational</option>
+                            <option value="commercial">Commercial</option>
+                            <option value="nonprofit">Non-profit</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="apiKeyDescription" class="form-label">Brief Description</label>
+                        <textarea class="form-control" id="apiKeyDescription" rows="3" placeholder="Briefly describe how you plan to use our API"></textarea>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="apiKeyTerms">
+                        <label class="form-check-label" for="apiKeyTerms">
+                            I agree to the <a href="#" target="_blank">Terms of Service</a> and <a href="#" target="_blank">Privacy Policy</a>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="requestApiKeyBtn">Request API Key</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Size selection change handler
+        const widgetSizeSelect = document.getElementById('widgetSize');
+        const customSizeContainer = document.getElementById('customSizeContainer');
+        
+        widgetSizeSelect.addEventListener('change', function() {
+            if (this.value === 'custom') {
+                customSizeContainer.classList.remove('d-none');
+            } else {
+                customSizeContainer.classList.add('d-none');
+            }
+        });
+        
+        // Widget location search
+        const widgetLocationBtn = document.getElementById('widgetLocationBtn');
+        const widgetLocation = document.getElementById('widgetLocation');
+        const widgetLocationFeedback = document.getElementById('widgetLocationFeedback');
+        
+        widgetLocationBtn.addEventListener('click', function() {
+            const location = widgetLocation.value.trim();
+            if (location) {
+                widgetLocationFeedback.innerHTML = '<div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>Searching...';
+                
+                // Simulate location search (replace with actual API call in production)
+                setTimeout(function() {
+                    widgetLocationFeedback.innerHTML = '<span class="text-success"><i class="fas fa-check-circle me-2"></i>Location found</span>';
+                }, 1000);
+            } else {
+                widgetLocationFeedback.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-circle me-2"></i>Please enter a location</span>';
+            }
+        });
+        
+        // Generate widget
+        const generateWidgetBtn = document.getElementById('generateWidgetBtn');
+        const widgetPreview = document.getElementById('widgetPreview');
+        const widgetCodeContainer = document.getElementById('widgetCodeContainer');
+        const widgetEmbedCode = document.getElementById('widgetEmbedCode');
+        
+        generateWidgetBtn.addEventListener('click', function() {
+            const widgetType = document.getElementById('widgetType').value;
+            const location = widgetLocation.value.trim();
+            const theme = document.querySelector('input[name="widgetTheme"]:checked').value;
+            const units = document.querySelector('input[name="widgetUnits"]:checked').value;
+            const size = widgetSizeSelect.value;
+            const refresh = document.getElementById('widgetRefresh').value;
+            
+            if (!location) {
+                widgetLocationFeedback.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-circle me-2"></i>Please enter a location</span>';
+                return;
+            }
+            
+            // Update preview
+            widgetPreview.innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary mb-2" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Generating widget preview...</p>
+                </div>
+            `;
+            
+            // Simulate widget generation (replace with actual API call in production)
+            setTimeout(function() {
+                // Example preview for current weather widget
+                if (widgetType === 'current') {
+                    const themeClass = theme === 'dark' ? 'bg-dark text-white' : 'bg-white';
+                    const widgetWidth = size === 'small' ? '200px' : (size === 'medium' ? '300px' : (size === 'large' ? '400px' : document.getElementById('widgetWidth').value + 'px'));
+                    const widgetHeight = size === 'small' ? '150px' : (size === 'medium' ? '200px' : (size === 'large' ? '300px' : document.getElementById('widgetHeight').value + 'px'));
+                    
+                    widgetPreview.innerHTML = `
+                        <div class="weather-widget ${themeClass} rounded p-3" style="width: ${widgetWidth}; height: ${widgetHeight}; margin: 0 auto;">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0">London, GB</h5>
+                                <span class="small">05:45 PM</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i class="fas fa-cloud-sun fs-1 text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="fs-1 fw-bold">15°${units === 'metric' ? 'C' : 'F'}</div>
+                                    <div>Partly Cloudy</div>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <div class="d-flex justify-content-between small">
+                                    <span><i class="fas fa-wind me-1"></i> 5.2 ${units === 'metric' ? 'm/s' : 'mph'}</span>
+                                    <span><i class="fas fa-tint me-1"></i> 76%</span>
+                                </div>
+                            </div>
+                            <div class="mt-3 text-end small">
+                                <a href="#" class="text-decoration-none">Weather Insights</a>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Generate embed code
+                    const embedCode = `<iframe src="https://weatherinsights.example/widgets/current?location=${encodeURIComponent(location)}&theme=${theme}&units=${units}&size=${size}&refresh=${refresh}" width="${widgetWidth}" height="${widgetHeight}" frameborder="0"></iframe>`;
+                    
+                    widgetEmbedCode.value = embedCode;
+                    widgetCodeContainer.classList.remove('d-none');
+                } else {
+                    // Similar implementations for other widget types
+                    // For brevity, just showing the current weather widget
+                    
+                    widgetPreview.innerHTML = `
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Preview for ${widgetType} widget type. Configure settings on the left to customize.
+                        </div>
+                    `;
+                    
+                    // Generate embed code
+                    const embedCode = `<iframe src="https://weatherinsights.example/widgets/${widgetType}?location=${encodeURIComponent(location)}&theme=${theme}&units=${units}&size=${size}&refresh=${refresh}" width="300" height="200" frameborder="0"></iframe>`;
+                    
+                    widgetEmbedCode.value = embedCode;
+                    widgetCodeContainer.classList.remove('d-none');
+                }
+            }, 1500);
+        });
+        
+        // Copy widget code
+        const copyWidgetCodeBtn = document.getElementById('copyWidgetCodeBtn');
+        
+        copyWidgetCodeBtn.addEventListener('click', function() {
+            widgetEmbedCode.select();
+            document.execCommand('copy');
+            
+            const icon = this.querySelector('i');
+            icon.className = 'fas fa-check';
+            
+            setTimeout(function() {
+                icon.className = 'fas fa-copy';
+            }, 2000);
+        });
+        
+        // API Key request
+        const requestApiKeyBtn = document.getElementById('requestApiKeyBtn');
+        
+        requestApiKeyBtn.addEventListener('click', function() {
+            const apiKeyName = document.getElementById('apiKeyName').value.trim();
+            const apiKeyEmail = document.getElementById('apiKeyEmail').value.trim();
+            const apiKeyTerms = document.getElementById('apiKeyTerms').checked;
+            
+            if (!apiKeyName || !apiKeyEmail || !apiKeyTerms) {
+                alert('Please fill in all required fields and accept the terms of service.');
+                return;
+            }
+            
+            // Show loading state
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Processing...';
+            this.disabled = true;
+            
+            // Simulate API key generation (replace with actual API call in production)
+            setTimeout(function() {
+                const modal = document.getElementById('apiKeyModal');
+                const modalInstance = bootstrap.Modal.getInstance(modal);
+                modalInstance.hide();
+                
+                // Show success message
+                const successAlert = `
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>Your API key request has been submitted. You will receive an email with your API key shortly.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `;
+                
+                document.querySelector('.api-docs').insertAdjacentHTML('beforebegin', successAlert);
+                
+                // Reset button state
+                requestApiKeyBtn.innerHTML = 'Request API Key';
+                requestApiKeyBtn.disabled = false;
+                
+                // Reset form
+                document.getElementById('apiKeyForm').reset();
+            }, 2000);
+        });
+    });
+</script>
+{% endblock %}

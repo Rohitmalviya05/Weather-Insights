@@ -1,0 +1,434 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-body p-5">
+                    <h1 class="card-title text-center mb-4">
+                        <i class="fas fa-seedling text-success me-2"></i>Gardening Weather
+                    </h1>
+                    <p class="lead text-center mb-5">Get optimal planting, watering, and harvesting times based on weather conditions</p>
+                    
+                    <div class="location-search mb-4">
+                        <label for="gardenLocation" class="form-label">Enter your garden location</label>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" id="gardenLocation" placeholder="City, Country">
+                            <button class="btn btn-success" type="button" id="gardenSearchBtn">
+                                <i class="fas fa-search me-1"></i>Search
+                            </button>
+                        </div>
+                        <div class="form-text">Or use your current location: 
+                            <button class="btn btn-sm btn-outline-success" id="useGardenLocationBtn">
+                                <i class="fas fa-map-marker-alt me-1"></i>Use my location
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="loadingGardenData" class="text-center d-none">
+                        <div class="spinner-border text-success" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Gathering garden weather information...</p>
+                    </div>
+                    
+                    <div id="gardeningData" class="d-none">
+                        <div class="row mb-4">
+                            <div class="col-md-7">
+                                <div class="card h-100">
+                                    <div class="card-header bg-success text-white">
+                                        <h5 class="mb-0">Today's Gardening Summary</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="garden-weather-icon me-3">
+                                                <i class="garden-condition-icon fas fa-sun fa-3x text-warning"></i>
+                                            </div>
+                                            <div>
+                                                <h5 id="gardenLocation" class="mb-1">Loading location...</h5>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="me-3">
+                                                        <span id="gardenTemp" class="fw-bold">--°C</span>
+                                                    </div>
+                                                    <div id="gardenCondition" class="text-muted">
+                                                        Weather condition
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="garden-conditions mb-3">
+                                            <div class="row g-2">
+                                                <div class="col-sm-4">
+                                                    <div class="garden-stat p-2 border rounded">
+                                                        <div class="garden-stat-label">Humidity</div>
+                                                        <div class="garden-stat-value" id="gardenHumidity">--%</div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-4">
+                                                    <div class="garden-stat p-2 border rounded">
+                                                        <div class="garden-stat-label">Wind</div>
+                                                        <div class="garden-stat-value" id="gardenWind">-- km/h</div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-4">
+                                                    <div class="garden-stat p-2 border rounded">
+                                                        <div class="garden-stat-label">UV Index</div>
+                                                        <div class="garden-stat-value" id="gardenUV">--</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div id="gardeningSummary" class="garden-summary p-3 bg-light rounded">
+                                            Loading gardening summary...
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-5">
+                                <div class="card h-100">
+                                    <div class="card-header bg-warning text-dark">
+                                        <h5 class="mb-0">Gardening Warnings</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="list-group list-group-flush" id="gardenWarnings">
+                                            <li class="list-group-item">
+                                                <i class="fas fa-exclamation-triangle text-warning me-2"></i>Loading warnings...
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header bg-primary text-white">
+                                        <h5 class="mb-0">Optimal Times</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <h6 class="text-primary mb-3">
+                                                    <i class="fas fa-tint me-2"></i>Best Watering Times
+                                                </h6>
+                                                <ul class="list-group" id="wateringTimes">
+                                                    <li class="list-group-item">Loading optimal times...</li>
+                                                </ul>
+                                            </div>
+                                            
+                                            <div class="col-md-4">
+                                                <h6 class="text-success mb-3">
+                                                    <i class="fas fa-leaf me-2"></i>Ideal Planting Days
+                                                </h6>
+                                                <ul class="list-group" id="plantingDays">
+                                                    <li class="list-group-item">Loading optimal times...</li>
+                                                </ul>
+                                            </div>
+                                            
+                                            <div class="col-md-4">
+                                                <h6 class="text-warning mb-3">
+                                                    <i class="fas fa-carrot me-2"></i>Best Harvesting Days
+                                                </h6>
+                                                <ul class="list-group" id="harvestingDays">
+                                                    <li class="list-group-item">Loading optimal times...</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="gardening-tips">
+                            <h5 class="mb-3">Gardening Tips for Today's Weather</h5>
+                            <div class="row row-cols-1 row-cols-md-3 g-4" id="gardeningTips">
+                                <div class="col">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <div class="tip-icon me-2">
+                                                    <i class="fas fa-leaf text-success"></i>
+                                                </div>
+                                                <h6 class="card-title mb-0">Loading tips...</h6>
+                                            </div>
+                                            <p class="card-text small">Please wait while we generate personalized gardening tips.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <button class="btn btn-lg btn-success" id="getGardeningBtn">
+                            <i class="fas fa-seedling me-2"></i>Get Gardening Advice
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.garden-stat {
+    text-align: center;
+    background-color: #f8f9fa;
+}
+
+.garden-stat-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.garden-stat-value {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.garden-summary {
+    border-left: 4px solid #28a745;
+    font-style: italic;
+}
+
+.tip-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: rgba(40, 167, 69, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const gardenLocation = document.getElementById('gardenLocation');
+    const gardenSearchBtn = document.getElementById('gardenSearchBtn');
+    const useGardenLocationBtn = document.getElementById('useGardenLocationBtn');
+    const getGardeningBtn = document.getElementById('getGardeningBtn');
+    const loadingGardenData = document.getElementById('loadingGardenData');
+    const gardeningData = document.getElementById('gardeningData');
+    
+    // Default coordinates
+    let lat = 40.7128;
+    let lon = -74.0060;
+    
+    // Use current location
+    useGardenLocationBtn.addEventListener('click', function() {
+        if (navigator.geolocation) {
+            useGardenLocationBtn.disabled = true;
+            useGardenLocationBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Locating...';
+            
+            navigator.geolocation.getCurrentPosition(function(position) {
+                lat = position.coords.latitude;
+                lon = position.coords.longitude;
+                
+                // Reverse geocode to get location name
+                fetch(`/api/reverse-geocode?lat=${lat}&lon=${lon}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            gardenLocation.value = data.location;
+                        }
+                        useGardenLocationBtn.disabled = false;
+                        useGardenLocationBtn.innerHTML = '<i class="fas fa-map-marker-alt me-1"></i>Use my location';
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        useGardenLocationBtn.disabled = false;
+                        useGardenLocationBtn.innerHTML = '<i class="fas fa-map-marker-alt me-1"></i>Use my location';
+                    });
+            }, function(error) {
+                console.error('Geolocation error:', error);
+                useGardenLocationBtn.disabled = false;
+                useGardenLocationBtn.innerHTML = '<i class="fas fa-map-marker-alt me-1"></i>Use my location';
+                alert('Unable to retrieve your location. Please enter it manually.');
+            });
+        } else {
+            alert('Geolocation is not supported by your browser. Please enter your location manually.');
+        }
+    });
+    
+    // Search location
+    gardenSearchBtn.addEventListener('click', function() {
+        const location = gardenLocation.value.trim();
+        if (location) {
+            gardenSearchBtn.disabled = true;
+            gardenSearchBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Searching...';
+            
+            fetch(`/api/geocode?location=${encodeURIComponent(location)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        lat = data.lat;
+                        lon = data.lon;
+                        gardenSearchBtn.disabled = false;
+                        gardenSearchBtn.innerHTML = '<i class="fas fa-search me-1"></i>Search';
+                    } else {
+                        alert('Location not found. Please try again.');
+                        gardenSearchBtn.disabled = false;
+                        gardenSearchBtn.innerHTML = '<i class="fas fa-search me-1"></i>Search';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    gardenSearchBtn.disabled = false;
+                    gardenSearchBtn.innerHTML = '<i class="fas fa-search me-1"></i>Search';
+                });
+        } else {
+            alert('Please enter a location.');
+        }
+    });
+    
+    // Get gardening advice
+    getGardeningBtn.addEventListener('click', function() {
+        if (!gardenLocation.value.trim()) {
+            alert('Please enter a location or use your current location.');
+            return;
+        }
+        
+        loadingGardenData.classList.remove('d-none');
+        gardeningData.classList.add('d-none');
+        getGardeningBtn.disabled = true;
+        
+        fetch(`/api/gardening?lat=${lat}&lon=${lon}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update location and weather info
+                    document.getElementById('gardenLocation').textContent = data.location;
+                    document.getElementById('gardenTemp').textContent = `${data.current.temp}°C`;
+                    document.getElementById('gardenCondition').textContent = data.current.description;
+                    document.getElementById('gardenHumidity').textContent = `${data.current.humidity}%`;
+                    document.getElementById('gardenWind').textContent = `${data.current.wind_speed} km/h`;
+                    document.getElementById('gardenUV').textContent = data.current.uv_index;
+                    
+                    // Update weather icon
+                    const iconElement = document.querySelector('.garden-condition-icon');
+                    iconElement.className = '';
+                    iconElement.classList.add('garden-condition-icon', 'fas', data.current.icon_class, 'fa-3x');
+                    if (data.current.icon_class.includes('sun')) {
+                        iconElement.classList.add('text-warning');
+                    } else if (data.current.icon_class.includes('cloud')) {
+                        iconElement.classList.add('text-secondary');
+                    } else if (data.current.icon_class.includes('rain')) {
+                        iconElement.classList.add('text-primary');
+                    } else {
+                        iconElement.classList.add('text-info');
+                    }
+                    
+                    // Update gardening summary
+                    document.getElementById('gardeningSummary').textContent = data.summary;
+                    
+                    // Update gardening warnings
+                    const warningsContainer = document.getElementById('gardenWarnings');
+                    warningsContainer.innerHTML = '';
+                    
+                    if (data.warnings.length === 0) {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item';
+                        li.innerHTML = `<i class="fas fa-check-circle text-success me-2"></i>No weather warnings for gardening today.`;
+                        warningsContainer.appendChild(li);
+                    } else {
+                        data.warnings.forEach(warning => {
+                            const li = document.createElement('li');
+                            li.className = 'list-group-item';
+                            li.innerHTML = `<i class="fas fa-exclamation-triangle text-warning me-2"></i>${warning}`;
+                            warningsContainer.appendChild(li);
+                        });
+                    }
+                    
+                    // Update watering times
+                    const wateringContainer = document.getElementById('wateringTimes');
+                    wateringContainer.innerHTML = '';
+                    
+                    data.watering_times.forEach(time => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item';
+                        li.innerHTML = `<i class="fas fa-clock text-primary me-2"></i>${time}`;
+                        wateringContainer.appendChild(li);
+                    });
+                    
+                    // Update planting days
+                    const plantingContainer = document.getElementById('plantingDays');
+                    plantingContainer.innerHTML = '';
+                    
+                    data.planting_days.forEach(day => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item';
+                        li.innerHTML = `<i class="fas fa-calendar-check text-success me-2"></i>${day}`;
+                        plantingContainer.appendChild(li);
+                    });
+                    
+                    // Update harvesting days
+                    const harvestingContainer = document.getElementById('harvestingDays');
+                    harvestingContainer.innerHTML = '';
+                    
+                    data.harvesting_days.forEach(day => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item';
+                        li.innerHTML = `<i class="fas fa-calendar-day text-warning me-2"></i>${day}`;
+                        harvestingContainer.appendChild(li);
+                    });
+                    
+                    // Update gardening tips
+                    const tipsContainer = document.getElementById('gardeningTips');
+                    tipsContainer.innerHTML = '';
+                    
+                    // Map different classes and icons for variety
+                    const iconClasses = [
+                        { icon: 'fas fa-leaf', color: 'success' },
+                        { icon: 'fas fa-tint', color: 'primary' },
+                        { icon: 'fas fa-sun', color: 'warning' },
+                        { icon: 'fas fa-snowflake', color: 'info' },
+                        { icon: 'fas fa-seedling', color: 'success' }
+                    ];
+                    
+                    data.tips.forEach((tip, index) => {
+                        const iconClass = iconClasses[index % iconClasses.length];
+                        
+                        const tipCol = document.createElement('div');
+                        tipCol.className = 'col';
+                        
+                        tipCol.innerHTML = `
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <div class="tip-icon me-2">
+                                            <i class="${iconClass.icon} text-${iconClass.color}"></i>
+                                        </div>
+                                        <h6 class="card-title mb-0">Tip ${index + 1}</h6>
+                                    </div>
+                                    <p class="card-text small">${tip}</p>
+                                </div>
+                            </div>
+                        `;
+                        
+                        tipsContainer.appendChild(tipCol);
+                    });
+                    
+                    gardeningData.classList.remove('d-none');
+                } else {
+                    alert('Could not get gardening advice. Please try again.');
+                }
+                
+                loadingGardenData.classList.add('d-none');
+                getGardeningBtn.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                loadingGardenData.classList.add('d-none');
+                getGardeningBtn.disabled = false;
+                alert('An error occurred while getting gardening advice. Please try again.');
+            });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,744 @@
+{% extends 'base.html' %}
+
+{% block title %}Interactive Weather Map - Weather Insights{% endblock %}
+
+{% block extra_css %}
+<!-- Leaflet CSS for the map -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
+<style>
+    .map-header {
+        background: linear-gradient(135deg, #1976D2 0%, #64B5F6 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+    }
+    
+    #weather-map {
+        height: 600px;
+        width: 100%;
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 1.5rem;
+    }
+    
+    .instructions {
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background-color: #E3F2FD;
+        border-radius: var(--border-radius);
+        border-left: 4px solid #1976D2;
+    }
+    
+    .weather-info {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 1.5rem;
+        display: none;
+    }
+    
+    .location {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+        color: var(--primary-color);
+    }
+    
+    .weather-description {
+        font-size: 1.2rem;
+        margin-bottom: 1.5rem;
+        text-transform: capitalize;
+    }
+    
+    .temperature {
+        font-size: 3rem;
+        font-weight: 700;
+        line-height: 1;
+        margin-bottom: 1rem;
+    }
+    
+    .weather-details {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    
+    .weather-detail {
+        flex: 0 0 50%;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .weather-detail i {
+        width: 40px;
+        height: 40px;
+        background-color: rgba(25, 118, 210, 0.1);
+        color: var(--primary-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+    }
+    
+    .legend {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 1rem;
+        box-shadow: var(--card-shadow);
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        margin-right: 0.5rem;
+        border-radius: 50%;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        #weather-map {
+            height: 400px;
+        }
+        
+        .weather-detail {
+            flex: 0 0 100%;
+        }
+    }
+    
+    /* Weather popup styles */
+    .weather-popup {
+        min-width: 220px;
+        text-align: center;
+    }
+    
+    .weather-popup h4 {
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--primary-color);
+    }
+    
+    .weather-popup .temp {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+    
+    .weather-popup .description {
+        text-transform: capitalize;
+        margin-bottom: 1rem;
+        font-style: italic;
+    }
+    
+    .weather-popup .details {
+        text-align: left;
+        margin-bottom: 0.75rem;
+    }
+    
+    .weather-popup .detail {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .weather-popup .detail i {
+        width: 24px;
+        color: var(--primary-color);
+    }
+    
+    .view-more {
+        width: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Map Header -->
+<div class="map-header text-center">
+    <div class="container">
+        <h1 class="display-4 fw-bold mb-3">Interactive Weather Map</h1>
+        <p class="lead">Click anywhere on the map to get real-time weather information for that location</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <!-- Map instructions and container -->
+        <div class="col-lg-8 mb-4">
+            <div class="instructions">
+                <h5 class="mb-2"><i class="fas fa-info-circle me-2 text-primary"></i>How to Use This Map</h5>
+                <ul class="mb-0">
+                    <li>Click on any location to view current weather conditions</li>
+                    <li>Click on city markers (pins) to see major city weather data</li>
+                    <li>Drag to pan around the map and use the zoom controls to zoom in/out</li>
+                    <li>Click "View Details" in any popup to see the full forecast</li>
+                </ul>
+            </div>
+            
+            <!-- Weather Map -->
+            <div id="weather-map"></div>
+            
+            <!-- Current selected location weather info -->
+            <div id="weather-info" class="weather-info">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h2 id="location-name" class="location">Location Name</h2>
+                        <p id="weather-description" class="weather-description">Weather Description</p>
+                        <div class="d-flex align-items-center">
+                            <div id="temperature" class="temperature me-4">--°C</div>
+                            <div id="weather-icon" class="text-primary">
+                                <i class="fas fa-cloud-sun fa-4x"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="weather-details">
+                            <div class="weather-detail">
+                                <i class="fas fa-thermometer-half"></i>
+                                <div>
+                                    <div class="text-muted small">Feels Like</div>
+                                    <div id="feels-like">--°C</div>
+                                </div>
+                            </div>
+                            <div class="weather-detail">
+                                <i class="fas fa-tint"></i>
+                                <div>
+                                    <div class="text-muted small">Humidity</div>
+                                    <div id="humidity">--%</div>
+                                </div>
+                            </div>
+                            <div class="weather-detail">
+                                <i class="fas fa-wind"></i>
+                                <div>
+                                    <div class="text-muted small">Wind</div>
+                                    <div id="wind">-- m/s</div>
+                                </div>
+                            </div>
+                            <div class="weather-detail">
+                                <i class="fas fa-compress-arrows-alt"></i>
+                                <div>
+                                    <div class="text-muted small">Pressure</div>
+                                    <div id="pressure">-- hPa</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-3">
+                    <a id="details-link" href="#" class="btn btn-primary">
+                        <i class="fas fa-chart-bar me-2"></i>View Full Forecast
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar with legend and recently viewed -->
+        <div class="col-lg-4">
+            <!-- Map Legend -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-map-signs me-2"></i> Map Legend
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #FFC107;"></div>
+                        <span>Clear Sky</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #90CAF9;"></div>
+                        <span>Partly Cloudy</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #BBDEFB;"></div>
+                        <span>Cloudy</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #64B5F6;"></div>
+                        <span>Rain</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #2196F3;"></div>
+                        <span>Heavy Rain</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #E1F5FE;"></div>
+                        <span>Snow</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #F5F5F5;"></div>
+                        <span>Fog/Mist</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #F44336;"></div>
+                        <span>Extreme Conditions</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recently Viewed Locations -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i> Recently Viewed
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="recent-locations" class="list-group">
+                        <!-- Will be populated by JavaScript -->
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-map-marker-alt mb-2 fa-2x"></i>
+                            <p>Your recently viewed locations will appear here.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Temperature Unit Toggle -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cog me-2"></i> Settings
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="unit-toggle">
+                        <label class="form-check-label" for="unit-toggle">
+                            Show temperatures in Fahrenheit
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+
+<script>
+    // Global variables
+    let map;
+    let weatherMarker;
+    let currentLocationMarker;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize map
+        map = L.map('weather-map').setView([20, 0], 2);
+        
+        // Add tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 18
+        }).addTo(map);
+        
+        // Add city markers
+        addCityMarkers();
+        
+        // Add click handler for map
+        map.on('click', onMapClick);
+        
+        // Load recent locations
+        loadRecentLocations();
+        
+        // Add unit toggle handler
+        document.getElementById('unit-toggle').addEventListener('change', function() {
+            const isFahrenheit = this.checked;
+            
+            // Update existing weather popup if one is open
+            if (map && weatherMarker) {
+                // Get the weather data from the current marker
+                const popupContent = createWeatherPopupContent(
+                    weatherState.currentWeatherData, 
+                    weatherState.currentLocation.lat, 
+                    weatherState.currentLocation.lon
+                );
+                
+                // Update the popup content
+                weatherMarker.setPopupContent(popupContent);
+                
+                // Update sidebar weather info if it's visible
+                if (document.getElementById('weather-info').style.display === 'block') {
+                    updateWeatherInfo(weatherState.currentWeatherData);
+                }
+            }
+            
+            // This will be handled by the main.js toggleUnit function for other pages
+            window.toggleUnit && window.toggleUnit(isFahrenheit);
+        });
+    });
+    
+    // On map click function
+    function onMapClick(e) {
+        const lat = e.latlng.lat.toFixed(6);
+        const lon = e.latlng.lng.toFixed(6);
+        
+        // If there's already a marker for clicked location, remove it
+        if (weatherMarker) {
+            map.removeLayer(weatherMarker);
+        }
+        
+        // Add marker at clicked location
+        weatherMarker = L.marker([lat, lon]).addTo(map);
+        
+        // Show loading popup
+        const loadingPopup = L.popup()
+            .setLatLng(e.latlng)
+            .setContent('<div class="text-center"><div class="spinner-border spinner-border-sm text-primary" role="status"></div><span class="ms-2">Loading weather data...</span></div>')
+            .openOn(map);
+        
+        // Fetch weather data for clicked location
+        fetch(`/api/weather?lat=${lat}&lon=${lon}`)
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    throw new Error(data.message || 'Error fetching weather data');
+                }
+                
+                // Store data for unit toggle updates
+                weatherState.currentWeatherData = data;
+                weatherState.currentLocation = { lat: lat, lon: lon };
+                
+                // Update the sidebar with weather info
+                updateWeatherInfo(data);
+                
+                // Create weather popup
+                const popupContent = createWeatherPopupContent(data, lat, lon);
+                
+                // Update popup with weather info
+                loadingPopup.setContent(popupContent);
+                weatherMarker.bindPopup(popupContent).openPopup();
+                
+                // Store in recent locations if it's a named location
+                if (data.location.name) {
+                    storeRecentLocation(data.location.name, lat, lon);
+                    loadRecentLocations(); // Reload the list
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching weather data:', error);
+                loadingPopup.setContent('<div class="text-danger"><i class="fas fa-exclamation-circle me-2"></i>Error loading weather data. Please try again.</div>');
+            });
+    }
+    
+    // Add city markers to the map
+    function addCityMarkers() {
+        const cities = [
+            { name: "London", lat: 51.5074, lon: -0.1278 },
+            { name: "New York", lat: 40.7128, lon: -74.0060 },
+            { name: "Tokyo", lat: 35.6762, lon: 139.6503 },
+            { name: "Sydney", lat: -33.8688, lon: 151.2093 },
+            { name: "Rio de Janeiro", lat: -22.9068, lon: -43.1729 },
+            { name: "Cairo", lat: 30.0444, lon: 31.2357 },
+            { name: "Moscow", lat: 55.7558, lon: 37.6173 },
+            { name: "Paris", lat: 48.8566, lon: 2.3522 },
+            { name: "Mumbai", lat: 19.0760, lon: 72.8777 },
+            { name: "Singapore", lat: 1.3521, lon: 103.8198 }
+        ];
+        
+        // Create custom icon
+        const cityIcon = L.icon({
+            iconUrl: 'https://cdn-icons-png.flaticon.com/512/3069/3069613.png',
+            iconSize: [32, 32],
+            iconAnchor: [16, 32],
+            popupAnchor: [0, -32],
+            shadowSize: [32, 32]
+        });
+        
+        // Add city markers
+        cities.forEach(city => {
+            const marker = L.marker([city.lat, city.lon], { 
+                icon: cityIcon,
+                title: city.name
+            }).addTo(map);
+            
+            // Add click handler
+            marker.on('click', function() {
+                fetchCityWeather(city.lat, city.lon, city.name, marker);
+            });
+        });
+    }
+    
+    // Fetch weather for a city marker
+    function fetchCityWeather(lat, lon, cityName, marker) {
+        // Show loading popup
+        const loadingPopup = L.popup()
+            .setLatLng(marker.getLatLng())
+            .setContent('<div class="text-center"><div class="spinner-border spinner-border-sm text-primary" role="status"></div><span class="ms-2">Loading weather data...</span></div>')
+            .openOn(map);
+        
+        // Fetch weather data
+        fetch(`/api/weather?lat=${lat}&lon=${lon}`)
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    throw new Error(data.message || 'Error fetching weather data');
+                }
+                
+                // Store data for unit toggle updates
+                weatherState.currentWeatherData = data;
+                weatherState.currentLocation = { lat: lat, lon: lon };
+                
+                // Update the sidebar with weather info
+                updateWeatherInfo(data);
+                
+                // Create weather popup
+                const popupContent = createWeatherPopupContent(data, lat, lon);
+                
+                // Update popup with weather info
+                loadingPopup.setContent(popupContent);
+                
+                // Store in recent locations
+                storeRecentLocation(cityName, lat, lon);
+                loadRecentLocations(); // Reload the list
+            })
+            .catch(error => {
+                console.error('Error fetching weather data:', error);
+                loadingPopup.setContent('<div class="text-danger"><i class="fas fa-exclamation-circle me-2"></i>Error loading weather data. Please try again.</div>');
+            });
+    }
+    
+    // Create weather popup content
+    function createWeatherPopupContent(data, lat, lon) {
+        const location = data.location;
+        const current = data.current;
+        const weather = current.weather;
+        
+        // Get the current unit setting (metric or imperial)
+        const isFahrenheit = document.getElementById('unit-toggle').checked;
+        
+        // Calculate temperature values based on the selected unit
+        const tempUnit = isFahrenheit ? '°F' : '°C';
+        const tempValue = isFahrenheit ? 
+            Math.round(current.temp * 9/5 + 32) : 
+            Math.round(current.temp);
+        const feelsLikeValue = isFahrenheit ? 
+            Math.round(current.feels_like * 9/5 + 32) : 
+            Math.round(current.feels_like);
+        const windUnit = isFahrenheit ? 'mph' : 'm/s';
+        const windSpeed = isFahrenheit ? 
+            (current.wind_speed * 2.237).toFixed(1) : 
+            current.wind_speed;
+        
+        return `
+            <div class="weather-popup">
+                <h4>${location.name}, ${location.country}</h4>
+                <div class="temp">${tempValue}${tempUnit}</div>
+                <div class="description">${weather.description}</div>
+                <div class="details">
+                    <div class="detail">
+                        <i class="fas fa-thermometer-half"></i>
+                        <span>Feels like: ${feelsLikeValue}${tempUnit}</span>
+                    </div>
+                    <div class="detail">
+                        <i class="fas fa-tint"></i>
+                        <span>Humidity: ${current.humidity}%</span>
+                    </div>
+                    <div class="detail">
+                        <i class="fas fa-wind"></i>
+                        <span>Wind: ${windSpeed} ${windUnit}</span>
+                    </div>
+                    <div class="detail">
+                        <i class="fas fa-compress-arrows-alt"></i>
+                        <span>Pressure: ${current.pressure} hPa</span>
+                    </div>
+                </div>
+                <a href="/weather?lat=${lat}&lon=${lon}" class="btn btn-sm btn-primary view-more mt-2">View Full Forecast</a>
+            </div>
+        `;
+    }
+    
+    // Update weather info sidebar
+    function updateWeatherInfo(data) {
+        const weatherInfo = document.getElementById('weather-info');
+        const location = data.location;
+        const current = data.current;
+        const weather = current.weather;
+        
+        // Get the current unit setting (metric or imperial)
+        const isFahrenheit = document.getElementById('unit-toggle').checked;
+        
+        // Calculate temperature values based on the selected unit
+        const tempUnit = isFahrenheit ? '°F' : '°C';
+        const tempValue = isFahrenheit ? 
+            Math.round(current.temp * 9/5 + 32) : 
+            Math.round(current.temp);
+        const feelsLikeValue = isFahrenheit ? 
+            Math.round(current.feels_like * 9/5 + 32) : 
+            Math.round(current.feels_like);
+        const windUnit = isFahrenheit ? 'mph' : 'm/s';
+        const windSpeed = isFahrenheit ? 
+            (current.wind_speed * 2.237).toFixed(1) : 
+            current.wind_speed;
+        
+        // Show weather info panel
+        weatherInfo.style.display = 'block';
+        
+        // Update weather data
+        document.getElementById('location-name').textContent = `${location.name}, ${location.country}`;
+        document.getElementById('weather-description').textContent = weather.description;
+        document.getElementById('temperature').textContent = `${tempValue}${tempUnit}`;
+        document.getElementById('feels-like').textContent = `${feelsLikeValue}${tempUnit}`;
+        document.getElementById('humidity').textContent = `${current.humidity}%`;
+        document.getElementById('wind').textContent = `${windSpeed} ${windUnit}`;
+        document.getElementById('pressure').textContent = `${current.pressure} hPa`;
+        
+        // Update link to full forecast
+        document.getElementById('details-link').href = `/weather?lat=${location.lat}&lon=${location.lon}`;
+        
+        // Update weather icon
+        const iconElement = document.querySelector('#weather-icon i');
+        const iconClass = getWeatherIconClass(weather.id);
+        
+        // Remove all existing icon classes
+        iconElement.className = '';
+        
+        // Add new icon classes
+        iconElement.classList.add('fas', iconClass, 'fa-4x');
+    }
+    
+    // Get weather icon class based on weather ID
+    function getWeatherIconClass(weatherId) {
+        // Thunderstorm: 200-299
+        if (weatherId >= 200 && weatherId < 300) {
+            return 'fa-bolt';
+        }
+        
+        // Drizzle: 300-399
+        if (weatherId >= 300 && weatherId < 400) {
+            return 'fa-cloud-rain';
+        }
+        
+        // Rain: 500-599
+        if (weatherId >= 500 && weatherId < 600) {
+            return weatherId >= 511 ? 'fa-cloud-showers-heavy' : 'fa-cloud-rain';
+        }
+        
+        // Snow: 600-699
+        if (weatherId >= 600 && weatherId < 700) {
+            return 'fa-snowflake';
+        }
+        
+        // Atmosphere (fog, mist, etc): 700-799
+        if (weatherId >= 700 && weatherId < 800) {
+            return 'fa-smog';
+        }
+        
+        // Clear: 800
+        if (weatherId === 800) {
+            return 'fa-sun';
+        }
+        
+        // Clouds: 801-899
+        if (weatherId > 800 && weatherId < 900) {
+            if (weatherId === 801) {
+                return 'fa-cloud-sun';
+            }
+            return 'fa-cloud';
+        }
+        
+        // Default
+        return 'fa-cloud';
+    }
+    
+    // Store a recently viewed location
+    function storeRecentLocation(name, lat, lon) {
+        try {
+            let recentLocations = JSON.parse(localStorage.getItem('recentLocations')) || [];
+            
+            // Check if location already exists
+            const exists = recentLocations.some(loc => loc.name === name);
+            
+            if (!exists) {
+                // Add to beginning of array
+                recentLocations.unshift({ name, lat, lon });
+                
+                // Keep only the most recent 5
+                if (recentLocations.length > 5) {
+                    recentLocations = recentLocations.slice(0, 5);
+                }
+                
+                // Save back to localStorage
+                localStorage.setItem('recentLocations', JSON.stringify(recentLocations));
+            }
+        } catch (error) {
+            console.error('Error storing recent location:', error);
+        }
+    }
+    
+    // Load recently viewed locations
+    function loadRecentLocations() {
+        const recentLocationsContainer = document.getElementById('recent-locations');
+        
+        try {
+            const recentLocations = JSON.parse(localStorage.getItem('recentLocations')) || [];
+            
+            // Clear container
+            recentLocationsContainer.innerHTML = '';
+            
+            if (recentLocations.length === 0) {
+                recentLocationsContainer.innerHTML = `
+                    <div class="text-center text-muted py-3">
+                        <i class="fas fa-map-marker-alt mb-2 fa-2x"></i>
+                        <p>Your recently viewed locations will appear here.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Add locations to the list
+            recentLocations.forEach(location => {
+                const item = document.createElement('a');
+                item.href = '#';
+                item.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
+                item.innerHTML = `
+                    <span>${location.name}</span>
+                    <span class="badge bg-primary rounded-pill">
+                        <i class="fas fa-arrow-right"></i>
+                    </span>
+                `;
+                
+                // Add click handler
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Center map on location
+                    map.setView([location.lat, location.lon], 10);
+                    
+                    // Create a temporary marker
+                    if (currentLocationMarker) {
+                        map.removeLayer(currentLocationMarker);
+                    }
+                    
+                    currentLocationMarker = L.marker([location.lat, location.lon]).addTo(map);
+                    
+                    // Fetch weather for this location
+                    fetchCityWeather(location.lat, location.lon, location.name, currentLocationMarker);
+                });
+                
+                recentLocationsContainer.appendChild(item);
+            });
+        } catch (error) {
+            console.error('Error loading recent locations:', error);
+            recentLocationsContainer.innerHTML = `
+                <div class="text-center text-danger py-3">
+                    <i class="fas fa-exclamation-circle mb-2 fa-2x"></i>
+                    <p>Error loading recent locations.</p>
+                </div>
+            `;
+        }
+    }
+</script>
+{% endblock %}

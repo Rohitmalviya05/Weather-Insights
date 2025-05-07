@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+
+{% block title %}Feedback - Weather Insights{% endblock %}
+
+{% block extra_css %}
+<style>
+    .feedback-header {
+        background: linear-gradient(135deg, #3f87a6, #084887);
+        color: white;
+        padding: 3rem 0;
+        border-radius: 0.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .feedback-form {
+        background-color: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        padding: 2rem;
+    }
+    
+    .rating-container {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+    }
+    
+    .rating-container input {
+        display: none;
+    }
+    
+    .rating-container label {
+        cursor: pointer;
+        font-size: 2rem;
+        color: #ddd;
+        padding: 0 5px;
+    }
+    
+    .rating-container label:hover,
+    .rating-container label:hover ~ label,
+    .rating-container input:checked ~ label {
+        color: #ffc107;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Feedback Header -->
+<div class="feedback-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <h1 class="display-5 fw-bold mb-3">We Value Your Feedback</h1>
+                <p class="lead mb-0">Help us improve Weather Insights by sharing your thoughts, suggestions, and experiences.</p>
+            </div>
+            <div class="col-lg-6 text-center">
+                <img src="{{ url_for('static', filename='images/widget-icon.png') }}" alt="Feedback" style="width: 150px;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mb-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="feedback-form">
+                <h2 class="mb-4">Send Feedback</h2>
+                
+                {% if success %}
+                <div class="alert alert-success">
+                    Your feedback has been submitted successfully. Thank you for helping us improve!
+                </div>
+                {% endif %}
+                
+                {% if error %}
+                <div class="alert alert-danger">
+                    {{ error }}
+                </div>
+                {% endif %}
+                
+                <form action="{{ url_for('main.feedback') }}" method="post">
+                    <div class="mb-3">
+                        <label for="feedbackType" class="form-label">Feedback Type</label>
+                        <select class="form-select" id="feedbackType" name="feedback_type" required>
+                            <option value="" selected disabled>Select feedback type</option>
+                            <option value="general">General Feedback</option>
+                            <option value="feature">Feature Request</option>
+                            <option value="bug">Report a Bug</option>
+                            <option value="praise">Praise</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="subject" class="form-label">Subject</label>
+                        <input type="text" class="form-control" id="subject" name="subject" placeholder="Brief summary of your feedback" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Feedback Details</label>
+                        <textarea class="form-control" id="message" name="message" rows="5" placeholder="Please provide details about your feedback, including any specific features, issues, or suggestions" required></textarea>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label d-block">Rate Your Overall Experience</label>
+                        <div class="rating-container">
+                            <input type="radio" id="star5" name="rating" value="5">
+                            <label for="star5" title="Excellent"><i class="fas fa-star"></i></label>
+                            
+                            <input type="radio" id="star4" name="rating" value="4">
+                            <label for="star4" title="Very Good"><i class="fas fa-star"></i></label>
+                            
+                            <input type="radio" id="star3" name="rating" value="3" checked>
+                            <label for="star3" title="Good"><i class="fas fa-star"></i></label>
+                            
+                            <input type="radio" id="star2" name="rating" value="2">
+                            <label for="star2" title="Fair"><i class="fas fa-star"></i></label>
+                            
+                            <input type="radio" id="star1" name="rating" value="1">
+                            <label for="star1" title="Poor"><i class="fas fa-star"></i></label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="contact_me" id="contactMe">
+                            <label class="form-check-label" for="contactMe">
+                                I'd like to be contacted about my feedback
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-info mb-3 d-none" id="contactInfo">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">Name</label>
+                                <input type="text" class="form-control" id="name" name="name">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Back to Home
+                        </a>
+                        <button type="submit" class="btn btn-primary">Submit Feedback</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mt-4 mt-lg-0">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h3 class="h5 mb-3">Why Your Feedback Matters</h3>
+                    <p class="text-muted mb-0">We're constantly working to improve Weather Insights and make it more useful for you. Your feedback helps us prioritize features and fix issues that matter most to our users.</p>
+                </div>
+            </div>
+            
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h3 class="h5 mb-3">FAQ</h3>
+                    <div class="mb-3">
+                        <h4 class="h6 fw-bold">Will I receive a response?</h4>
+                        <p class="text-muted small mb-0">If you checked the "contact me" box and provided your email, we'll do our best to respond to your feedback within 2-3 business days.</p>
+                    </div>
+                    <div class="mb-3">
+                        <h4 class="h6 fw-bold">What happens to my feedback?</h4>
+                        <p class="text-muted small mb-0">All feedback is reviewed by our team and used to improve our service and prioritize new features.</p>
+                    </div>
+                    <div>
+                        <h4 class="h6 fw-bold">I found a critical issue</h4>
+                        <p class="text-muted small mb-0">For urgent matters, please select "Report a Bug" and check the "contact me" box so we can follow up quickly.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body p-4 text-center">
+                    <h3 class="h5 mb-3">Other Ways to Reach Us</h3>
+                    <div class="d-flex flex-column gap-2">
+                        <a href="mailto:support@weatherinsights.com" class="d-flex align-items-center text-decoration-none text-body">
+                            <i class="fas fa-envelope text-primary me-2"></i>
+                            <span>support@weatherinsights.com</span>
+                        </a>
+                        <a href="#" class="d-flex align-items-center text-decoration-none text-body">
+                            <i class="fab fa-twitter text-primary me-2"></i>
+                            <span>@WeatherInsights</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="text-center mt-5">
+        <a href="{{ url_for('main.index') }}" class="btn btn-outline-primary">Back to Home</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Show/hide contact info based on checkbox
+        const contactMeCheckbox = document.getElementById('contactMe');
+        const contactInfoDiv = document.getElementById('contactInfo');
+        
+        contactMeCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                contactInfoDiv.classList.remove('d-none');
+            } else {
+                contactInfoDiv.classList.add('d-none');
+            }
+        });
+    });
+</script>
+{% endblock %}

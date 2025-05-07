@@ -1,0 +1,354 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-body p-5">
+                    <h1 class="card-title text-center mb-4">
+                        <i class="fas fa-plane text-primary me-2"></i>Trip Weather Planner
+                    </h1>
+                    <p class="lead text-center mb-5">Plan your trips with detailed weather forecasts and packing recommendations</p>
+                    
+                    <div class="trip-planner-form mb-5">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="destination" class="form-label">Destination</label>
+                                <input type="text" class="form-control" id="destination" placeholder="City, Country">
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <label for="startDate" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="startDate">
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <label for="endDate" class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="endDate">
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <button class="btn btn-primary" id="getTripBtn">
+                                <i class="fas fa-search me-2"></i>Get Trip Forecast
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="loadingTrip" class="text-center d-none">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Generating trip forecast and recommendations...</p>
+                    </div>
+                    
+                    <div id="tripResults" class="d-none">
+                        <div class="destination-overview mb-4">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h4 id="tripDestination" class="mb-2">Destination Name</h4>
+                                            <div id="tripDates" class="mb-1">Trip dates</div>
+                                            <div id="tripLength" class="text-light">Trip length</div>
+                                        </div>
+                                        <div class="col-md-4 text-center text-md-end">
+                                            <div class="trip-weather-icon">
+                                                <i class="trip-condition-icon fas fa-sun fa-4x"></i>
+                                            </div>
+                                            <div id="tripAverageTemp" class="fs-5 mt-2">--°C</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="trip-forecast mb-4">
+                            <h5 class="mb-3">Weather Forecast</h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Weather</th>
+                                            <th>Temperature</th>
+                                            <th>Conditions</th>
+                                            <th>Precipitation</th>
+                                            <th>Wind</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="forecastTable">
+                                        <tr>
+                                            <td colspan="6" class="text-center">Loading forecast data...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header bg-primary text-white">
+                                        <h5 class="mb-0">Packing Recommendations</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="accordion" id="packingAccordion">
+                                            <div class="accordion-item">
+                                                <h2 class="accordion-header">
+                                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#clothingCollapse" aria-expanded="true" aria-controls="clothingCollapse">
+                                                        <i class="fas fa-tshirt me-2"></i>Clothing
+                                                    </button>
+                                                </h2>
+                                                <div id="clothingCollapse" class="accordion-collapse collapse show" data-bs-parent="#packingAccordion">
+                                                    <div class="accordion-body">
+                                                        <ul class="list-group list-group-flush" id="clothingList">
+                                                            <li class="list-group-item">Loading clothing recommendations...</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="accordion-item">
+                                                <h2 class="accordion-header">
+                                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accessoriesCollapse" aria-expanded="false" aria-controls="accessoriesCollapse">
+                                                        <i class="fas fa-glasses me-2"></i>Accessories
+                                                    </button>
+                                                </h2>
+                                                <div id="accessoriesCollapse" class="accordion-collapse collapse" data-bs-parent="#packingAccordion">
+                                                    <div class="accordion-body">
+                                                        <ul class="list-group list-group-flush" id="accessoriesList">
+                                                            <li class="list-group-item">Loading accessories recommendations...</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="accordion-item">
+                                                <h2 class="accordion-header">
+                                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#otherCollapse" aria-expanded="false" aria-controls="otherCollapse">
+                                                        <i class="fas fa-suitcase me-2"></i>Other Items
+                                                    </button>
+                                                </h2>
+                                                <div id="otherCollapse" class="accordion-collapse collapse" data-bs-parent="#packingAccordion">
+                                                    <div class="accordion-body">
+                                                        <ul class="list-group list-group-flush" id="otherItemsList">
+                                                            <li class="list-group-item">Loading other items recommendations...</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header bg-success text-white">
+                                        <h5 class="mb-0">Activity Recommendations</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="activityRecommendations">
+                                            <div class="activity-loading text-center py-4">
+                                                <div class="spinner-border text-success" role="status">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                                <p class="mt-2">Generating activity recommendations...</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="trip-notes">
+                            <h5 class="mb-3">Trip Weather Notes</h5>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div id="tripNotes" class="trip-notes-content">
+                                        Loading trip weather notes...
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const destination = document.getElementById('destination');
+    const startDate = document.getElementById('startDate');
+    const endDate = document.getElementById('endDate');
+    const getTripBtn = document.getElementById('getTripBtn');
+    const loadingTrip = document.getElementById('loadingTrip');
+    const tripResults = document.getElementById('tripResults');
+    
+    // Set default dates
+    const today = new Date();
+    const twoWeeksFromNow = new Date();
+    twoWeeksFromNow.setDate(today.getDate() + 14);
+    
+    startDate.valueAsDate = today;
+    endDate.valueAsDate = twoWeeksFromNow;
+    
+    // Get trip forecast
+    getTripBtn.addEventListener('click', function() {
+        if (!destination.value.trim() || !startDate.value || !endDate.value) {
+            alert('Please fill in all fields.');
+            return;
+        }
+        
+        const start = new Date(startDate.value);
+        const end = new Date(endDate.value);
+        
+        if (start > end) {
+            alert('Start date cannot be after end date.');
+            return;
+        }
+        
+        loadingTrip.classList.remove('d-none');
+        tripResults.classList.add('d-none');
+        getTripBtn.disabled = true;
+        
+        // Simplified approach - just use the destination directly
+        fetch(`/api/trip-planner?destination=${encodeURIComponent(destination.value.trim())}&start_date=${startDate.value}&end_date=${endDate.value}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update trip overview
+                    document.getElementById('tripDestination').textContent = data.destination;
+                    document.getElementById('tripDates').textContent = `${data.start_date} to ${data.end_date}`;
+                    
+                    const tripDays = data.days.length;
+                    document.getElementById('tripLength').textContent = `${tripDays} ${tripDays === 1 ? 'day' : 'days'} trip`;
+                    
+                    // Calculate average temperature
+                    let totalTemp = 0;
+                    data.days.forEach(day => {
+                        totalTemp += day.temp.day;
+                    });
+                    const avgTemp = Math.round(totalTemp / data.days.length);
+                    document.getElementById('tripAverageTemp').textContent = `Avg ${avgTemp}°C`;
+                    
+                    // Update weather icon
+                    const iconElement = document.querySelector('.trip-condition-icon');
+                    iconElement.className = '';
+                    iconElement.classList.add('trip-condition-icon', 'fas', data.overall_icon, 'fa-4x');
+                    
+                    // Update forecast table
+                    const forecastTable = document.getElementById('forecastTable');
+                    forecastTable.innerHTML = '';
+                    
+                    data.days.forEach(day => {
+                        const row = document.createElement('tr');
+                        
+                        row.innerHTML = `
+                            <td>${day.date}</td>
+                            <td>
+                                <i class="fas ${day.icon} ${day.icon.includes('sun') ? 'text-warning' : day.icon.includes('cloud') ? 'text-secondary' : day.icon.includes('rain') ? 'text-primary' : 'text-info'}"></i>
+                            </td>
+                            <td>
+                                <span class="fw-bold">${Math.round(day.temp.day)}°C</span>
+                                <span class="text-muted small">/ ${Math.round(day.temp.night)}°C</span>
+                            </td>
+                            <td>${day.description}</td>
+                            <td>${day.precipitation}%</td>
+                            <td>${day.wind} km/h</td>
+                        `;
+                        
+                        forecastTable.appendChild(row);
+                    });
+                    
+                    // Update packing recommendations
+                    const clothingList = document.getElementById('clothingList');
+                    clothingList.innerHTML = '';
+                    
+                    if (data.packing_list && data.packing_list.clothing) {
+                        data.packing_list.clothing.forEach(item => {
+                            const li = document.createElement('li');
+                            li.className = 'list-group-item';
+                            li.innerHTML = `<i class="fas fa-check text-success me-2"></i>${item}`;
+                            clothingList.appendChild(li);
+                        });
+                    }
+                    
+                    const accessoriesList = document.getElementById('accessoriesList');
+                    accessoriesList.innerHTML = '';
+                    
+                    if (data.packing_list && data.packing_list.weather_specific) {
+                        data.packing_list.weather_specific.forEach(item => {
+                            const li = document.createElement('li');
+                            li.className = 'list-group-item';
+                            li.innerHTML = `<i class="fas fa-check text-success me-2"></i>${item}`;
+                            accessoriesList.appendChild(li);
+                        });
+                    }
+                    
+                    const otherItemsList = document.getElementById('otherItemsList');
+                    otherItemsList.innerHTML = '';
+                    
+                    if (data.packing_list && data.packing_list.essentials) {
+                        data.packing_list.essentials.forEach(item => {
+                            const li = document.createElement('li');
+                            li.className = 'list-group-item';
+                            li.innerHTML = `<i class="fas fa-check text-success me-2"></i>${item}`;
+                            otherItemsList.appendChild(li);
+                        });
+                    }
+                    
+                    // Update activity recommendations - simplified with text only
+                    const activityRecommendations = document.getElementById('activityRecommendations');
+                    activityRecommendations.innerHTML = '';
+                    
+                    if (data.activities && Array.isArray(data.activities)) {
+                        data.activities.forEach(activity => {
+                            const activityCard = document.createElement('div');
+                            activityCard.className = 'activity-item mb-3';
+                            
+                            // Simplified activity display - just show the text
+                            activityCard.innerHTML = `
+                                <div class="d-flex">
+                                    <div class="activity-icon me-3">
+                                        <i class="fas fa-check-circle fa-lg text-success"></i>
+                                    </div>
+                                    <div>
+                                        <p class="mb-0">${activity}</p>
+                                    </div>
+                                </div>
+                            `;
+                            
+                            activityRecommendations.appendChild(activityCard);
+                        });
+                    }
+                    
+                    // Update trip notes
+                    document.getElementById('tripNotes').innerHTML = '';
+                    if (data.weather_notes && Array.isArray(data.weather_notes)) {
+                        const notesContent = data.weather_notes.map(note => `<p>${note}</p>`).join('');
+                        document.getElementById('tripNotes').innerHTML = notesContent;
+                    }
+                    
+                    tripResults.classList.remove('d-none');
+                } else {
+                    alert('Could not retrieve trip planning data. Please try again.');
+                }
+                
+                loadingTrip.classList.add('d-none');
+                getTripBtn.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                loadingTrip.classList.add('d-none');
+                getTripBtn.disabled = false;
+                alert('An error occurred: ' + error.message);
+            });
+    });
+});
+</script>
+{% endblock %}

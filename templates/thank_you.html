@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Thank You - Weather Insights{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-4 fw-bold mb-3">Thank You!</h1>
+                <p class="lead">We appreciate your feedback and will use it to improve Weather Insights.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card border-0 shadow-sm text-center p-5">
+                <div class="success-icon mb-4">
+                    <i class="fas fa-check-circle display-1 text-success"></i>
+                </div>
+                <h2 class="mb-4">Your Feedback Has Been Submitted</h2>
+                <p class="lead mb-4">Thank you for taking the time to share your thoughts with us. Your input helps us improve our service for everyone.</p>
+                
+                <div class="mb-4">
+                    <h4>What happens next?</h4>
+                    <p>Our team reviews all feedback carefully. If you've reported an issue or requested a feature, we'll consider it for future updates.</p>
+                </div>
+                
+                <div class="d-grid gap-3 d-md-flex justify-content-md-center">
+                    <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+                        <i class="fas fa-home me-2"></i>Return to Homepage
+                    </a>
+                    <a href="{{ url_for('main.feedback') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-comment-alt me-2"></i>Submit Another Feedback
+                    </a>
+                </div>
+            </div>
+            
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-body p-4">
+                    <h4 class="card-title mb-3">More Ways to Connect</h4>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card bg-light border-0 h-100">
+                                <div class="card-body text-center p-4">
+                                    <i class="fas fa-bell fa-2x text-primary mb-3"></i>
+                                    <h5>Notifications</h5>
+                                    <p class="small">Stay updated with our latest features and improvements</p>
+                                    <a href="{{ url_for('main.smart_notifications') }}" class="btn btn-sm btn-outline-primary">Enable Notifications</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light border-0 h-100">
+                                <div class="card-body text-center p-4">
+                                    <i class="fas fa-puzzle-piece fa-2x text-primary mb-3"></i>
+                                    <h5>API Access</h5>
+                                    <p class="small">Integrate our weather data into your applications</p>
+                                    <a href="{{ url_for('main.custom_widgets') }}" class="btn btn-sm btn-outline-primary">Explore API</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-light border-0 h-100">
+                                <div class="card-body text-center p-4">
+                                    <i class="fas fa-chart-line fa-2x text-primary mb-3"></i>
+                                    <h5>Trends</h5>
+                                    <p class="small">Discover historical weather patterns and predictions</p>
+                                    <a href="{{ url_for('main.historical_trends') }}" class="btn btn-sm btn-outline-primary">View Trends</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

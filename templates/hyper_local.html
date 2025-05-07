@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+
+{% block title %}Hyper-Local Forecast - Weather Insights{% endblock %}
+
+{% block content %}
+<div class="container mb-5">
+    <h1 class="section-heading">Hyper-Local Forecast</h1>
+    <p class="section-subheading">Get precise weather data for your exact neighborhood with our advanced microclimate technology</p>
+    
+    <div class="row mb-5">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">Enter Your Exact Location</h3>
+                </div>
+                <div class="card-body">
+                    <form class="mb-4">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="address" class="form-label">Address</label>
+                                <input type="text" class="form-control" id="address" placeholder="123 Main St">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="city" class="form-label">City</label>
+                                <input type="text" class="form-control" id="city" placeholder="City">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="state" class="form-label">State/Province</label>
+                                <input type="text" class="form-control" id="state" placeholder="State">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="postal" class="form-label">Postal Code</label>
+                                <input type="text" class="form-control" id="postal" placeholder="Postal Code">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="country" class="form-label">Country</label>
+                                <input type="text" class="form-control" id="country" placeholder="Country">
+                            </div>
+                            <div class="col-12 text-center">
+                                <button type="button" class="btn btn-primary mt-3">
+                                    <i class="fas fa-search me-2"></i>Get Hyper-Local Forecast
+                                </button>
+                                <button type="button" class="btn btn-outline-primary mt-3 ms-2" id="use-my-location">
+                                    <i class="fas fa-map-marker-alt me-2"></i>Use My Location
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Our hyper-local forecast provides weather data with precision down to 500 meters, capturing microclimates that can vary significantly even within the same city.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">Your Hyper-Local Forecast</h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="text-center py-5">
+                        <div class="mb-4">
+                            <i class="fas fa-map-marked-alt fa-4x text-primary mb-3"></i>
+                            <h4>Enter your location above to see your hyper-local forecast</h4>
+                            <p class="text-muted">Get precise weather information for your exact neighborhood</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">Why Hyper-Local?</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <i class="fas fa-mountain text-primary fa-2x"></i>
+                                </div>
+                                <div>
+                                    <h5>Terrain Effects</h5>
+                                    <p class="mb-0">Hills, valleys, and buildings create unique microclimates that affect temperature and wind.</p>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <i class="fas fa-water text-primary fa-2x"></i>
+                                </div>
+                                <div>
+                                    <h5>Water Bodies</h5>
+                                    <p class="mb-0">Proximity to lakes, rivers, and oceans significantly impacts local temperatures and humidity.</p>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <i class="fas fa-tree text-primary fa-2x"></i>
+                                </div>
+                                <div>
+                                    <h5>Vegetation</h5>
+                                    <p class="mb-0">Parks and green spaces create cooler areas compared to concrete urban environments.</p>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <i class="fas fa-city text-primary fa-2x"></i>
+                                </div>
+                                <div>
+                                    <h5>Urban Heat Islands</h5>
+                                    <p class="mb-0">Cities are typically warmer than surrounding areas due to heat-absorbing surfaces.</p>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">Related Features</h3>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="{{ url_for('main.weather') }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-cloud me-2 text-primary"></i>
+                                    Weather Forecast
+                                </div>
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </a>
+                        <a href="{{ url_for('main.map') }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-map me-2 text-primary"></i>
+                                    Weather Map
+                                </div>
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </a>
+                        <a href="{{ url_for('main.commute_forecast') }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-car me-2 text-primary"></i>
+                                    Commute Forecast
+                                </div>
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle "Use My Location" button click
+        document.getElementById('use-my-location').addEventListener('click', function() {
+            if (navigator.geolocation) {
+                this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Getting Location...';
+                this.disabled = true;
+                
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        // Success callback - would normally send these coordinates to the server
+                        console.log("Latitude: " + position.coords.latitude + ", Longitude: " + position.coords.longitude);
+                        
+                        // Reset button
+                        const button = document.getElementById('use-my-location');
+                        button.innerHTML = '<i class="fas fa-check-circle me-2"></i>Location Found';
+                        button.classList.remove('btn-outline-primary');
+                        button.classList.add('btn-success');
+                        
+                        // Alert for demo purposes
+                        setTimeout(function() {
+                            alert("Your coordinates have been found! In a real implementation, we would now display your hyper-local forecast.");
+                        }, 500);
+                    },
+                    function(error) {
+                        // Error callback
+                        const button = document.getElementById('use-my-location');
+                        button.innerHTML = '<i class="fas fa-map-marker-alt me-2"></i>Use My Location';
+                        button.disabled = false;
+                        
+                        // Alert the error
+                        alert("Error getting your location: " + error.message);
+                    }
+                );
+            } else {
+                alert("Geolocation is not supported by your browser.");
+            }
+        });
+    });
+</script>
+{% endblock %}

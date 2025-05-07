@@ -1,0 +1,545 @@
+{% extends 'base.html' %}
+
+{% block title %}Weather Forecast - {{ weather.location.name }} - Weather Insights{% endblock %}
+
+{% block extra_css %}
+<style>
+    .weather-header {
+        background: linear-gradient(135deg, #1976D2 0%, #64B5F6 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+    }
+    
+    .current-weather-card {
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 2rem;
+    }
+    
+    .current-weather-icon {
+        font-size: 5rem;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+    }
+    
+    .current-temperature {
+        font-size: 4rem;
+        font-weight: 700;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+    
+    .weather-detail {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .detail-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: rgba(66, 165, 245, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        color: var(--primary-color);
+    }
+    
+    .forecast-card {
+        height: 100%;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .forecast-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--hover-shadow);
+    }
+    
+    .forecast-day {
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--primary-color);
+    }
+    
+    .forecast-date {
+        font-size: 0.9rem;
+        color: var(--light-text);
+    }
+    
+    .forecast-icon {
+        font-size: 2.5rem;
+        color: var(--primary-color);
+        margin: 1rem 0;
+    }
+    
+    .forecast-temp {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+    
+    .forecast-description {
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+        text-transform: capitalize;
+    }
+    
+    .forecast-details {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+    }
+    
+    .forecast-detail {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .forecast-detail i {
+        margin-bottom: 0.25rem;
+        color: var(--primary-color);
+    }
+    
+    .chart-container {
+        width: 100%;
+        height: 300px;
+        margin-bottom: 2rem;
+    }
+    
+    .unit-switch {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .unit-switch .form-check {
+        margin-bottom: 0;
+    }
+    
+    @media (max-width: 768px) {
+        .current-weather-icon {
+            font-size: 4rem;
+        }
+        
+        .current-temperature {
+            font-size: 3rem;
+        }
+        
+        .detail-icon {
+            width: 35px;
+            height: 35px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Weather Header -->
+<div class="weather-header text-center">
+    <div class="container">
+        <h1 class="display-4 fw-bold mb-3">{{ weather.location.name }} Weather</h1>
+        <p class="lead">{{ weather.location.country }} | {{ current_datetime }}</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Temperature Unit Toggle -->
+    <div class="unit-switch">
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="unit-toggle">
+            <label class="form-check-label" for="unit-toggle">
+                Show temperatures in Fahrenheit
+            </label>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Left Column - Current Weather -->
+        <div class="col-lg-5 mb-4">
+            <div class="card current-weather-card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-cloud-sun me-2"></i> Current Weather</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="current-weather-icon">
+                        <i class="fas {% if weather.current.weather.id == 800 %}fa-sun{% elif weather.current.weather.id >= 200 and weather.current.weather.id < 300 %}fa-bolt{% elif weather.current.weather.id >= 300 and weather.current.weather.id < 600 %}fa-cloud-rain{% elif weather.current.weather.id >= 600 and weather.current.weather.id < 700 %}fa-snowflake{% elif weather.current.weather.id >= 700 and weather.current.weather.id < 800 %}fa-smog{% elif weather.current.weather.id > 800 %}fa-cloud{% endif %}"></i>
+                    </div>
+                    <div class="current-temperature">{{ weather.current.temp|round|int }}°C</div>
+                    <div class="weather-description h5 mb-4">{{ weather.current.weather.description|title }}</div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="weather-detail">
+                                <div class="detail-icon">
+                                    <i class="fas fa-thermometer-half"></i>
+                                </div>
+                                <div class="detail-info">
+                                    <div class="detail-label text-muted">Feels Like</div>
+                                    <div class="detail-value">{{ weather.current.feels_like|round|int }}°C</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="weather-detail">
+                                <div class="detail-icon">
+                                    <i class="fas fa-tint"></i>
+                                </div>
+                                <div class="detail-info">
+                                    <div class="detail-label text-muted">Humidity</div>
+                                    <div class="detail-value">{{ weather.current.humidity }}%</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="weather-detail">
+                                <div class="detail-icon">
+                                    <i class="fas fa-wind"></i>
+                                </div>
+                                <div class="detail-info">
+                                    <div class="detail-label text-muted">Wind</div>
+                                    <div class="detail-value">{{ weather.current.wind_speed }} m/s</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="weather-detail">
+                                <div class="detail-icon">
+                                    <i class="fas fa-compress-arrows-alt"></i>
+                                </div>
+                                <div class="detail-info">
+                                    <div class="detail-label text-muted">Pressure</div>
+                                    <div class="detail-value">{{ weather.current.pressure }} hPa</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="weather-detail">
+                                <div class="detail-icon">
+                                    <i class="fas fa-eye"></i>
+                                </div>
+                                <div class="detail-info">
+                                    <div class="detail-label text-muted">Visibility</div>
+                                    <div class="detail-value">{{ (weather.current.visibility / 1000)|round(1) }} km</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="weather-detail">
+                                <div class="detail-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="detail-info">
+                                    <div class="detail-label text-muted">Updated</div>
+                                    <div class="detail-value">{{ (weather.current.dt|datetimeformat('%H:%M')) }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-light d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-sun text-warning me-1"></i> 
+                        Sunrise: {{ (weather.current.sunrise|datetimeformat('%H:%M')) }}
+                    </div>
+                    <div>
+                        <i class="fas fa-moon text-primary me-1"></i> 
+                        Sunset: {{ (weather.current.sunset|datetimeformat('%H:%M')) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column - Maps and Additional Info -->
+        <div class="col-lg-7 mb-4">
+            <!-- Temperature Chart -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i> 5-Day Temperature Forecast</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="temperature-chart" class="chart-container"></canvas>
+                </div>
+            </div>
+            
+            <!-- Location Info -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-map-marker-alt me-2"></i> Location Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6 class="text-muted mb-2">Geographic Coordinates</h6>
+                            <p class="mb-0">Latitude: {{ weather.location.lat }}</p>
+                            <p class="mb-0">Longitude: {{ weather.location.lon }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6 class="text-muted mb-2">Local Time</h6>
+                            <p class="mb-0">{{ current_datetime }}</p>
+                            <p class="mb-0">UTC Offset: {{ (weather.location.timezone / 3600)|round|int }} hours</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <a href="{{ url_for('main.map') }}?lat={{ weather.location.lat }}&lon={{ weather.location.lon }}" class="btn btn-outline-primary">
+                            <i class="fas fa-map me-2"></i>View on Interactive Map
+                        </a>
+                        <a href="{{ url_for('main.historical_trends') }}?lat={{ weather.location.lat }}&lon={{ weather.location.lon }}" class="btn btn-outline-primary ms-2">
+                            <i class="fas fa-history me-2"></i>View Historical Trends
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 5-Day Forecast -->
+    <h2 class="section-heading mb-4">5-Day Forecast</h2>
+    <div class="row">
+        {% for day in weather.forecast %}
+        <div class="col-md-6 col-lg-4 col-xl-2-4 mb-4">
+            <div class="card forecast-card text-center">
+                <div class="card-body">
+                    <div class="forecast-day">{{ day.day }}</div>
+                    <div class="forecast-date">{{ day.date }}</div>
+                    <div class="forecast-icon">
+                        <i class="fas {% if day.weather.id == 800 %}fa-sun{% elif day.weather.id >= 200 and day.weather.id < 300 %}fa-bolt{% elif day.weather.id >= 300 and day.weather.id < 600 %}fa-cloud-rain{% elif day.weather.id >= 600 and day.weather.id < 700 %}fa-snowflake{% elif day.weather.id >= 700 and day.weather.id < 800 %}fa-smog{% elif day.weather.id > 800 %}fa-cloud{% endif %}"></i>
+                    </div>
+                    <div class="forecast-temp">
+                        <span class="temp-max">{{ day.temp_max|round|int }}°</span>
+                        <span class="text-muted">/</span>
+                        <span class="temp-min text-muted">{{ day.temp_min|round|int }}°</span>
+                    </div>
+                    <div class="forecast-description">{{ day.weather.description }}</div>
+                    <div class="forecast-details">
+                        <div class="forecast-detail">
+                            <i class="fas fa-tint"></i>
+                            <span>{{ day.humidity_avg|round|int }}%</span>
+                        </div>
+                        <div class="forecast-detail">
+                            <i class="fas fa-wind"></i>
+                            <span>{{ day.wind_speed_avg|round(1) }} m/s</span>
+                        </div>
+                        {% if day.rain_chance > 0 %}
+                        <div class="forecast-detail">
+                            <i class="fas fa-cloud-rain"></i>
+                            <span>{{ day.rain_chance|round|int }}%</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Additional Tools -->
+    <h2 class="section-heading mb-4">Specialized Weather Tools</h2>
+    <div class="row">
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card feature-card h-100">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon bg-primary-subtle mb-3">
+                        <i class="fas fa-tshirt fa-2x"></i>
+                    </div>
+                    <h5 class="card-title mb-3">Clothing Recommendations</h5>
+                    <p class="card-text text-muted">Get AI-powered suggestions on what to wear based on current conditions.</p>
+                    <a href="{{ url_for('main.clothing_recommendations') }}?lat={{ weather.location.lat }}&lon={{ weather.location.lon }}" class="btn btn-outline-primary mt-3">Get Recommendations</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card feature-card h-100">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon bg-primary-subtle mb-3">
+                        <i class="fas fa-heartbeat fa-2x"></i>
+                    </div>
+                    <h5 class="card-title mb-3">Health Alerts</h5>
+                    <p class="card-text text-muted">Receive personalized health alerts related to current weather conditions.</p>
+                    <a href="{{ url_for('main.health_alerts') }}?lat={{ weather.location.lat }}&lon={{ weather.location.lon }}" class="btn btn-outline-primary mt-3">View Health Alerts</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card feature-card h-100">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon bg-primary-subtle mb-3">
+                        <i class="fas fa-suitcase fa-2x"></i>
+                    </div>
+                    <h5 class="card-title mb-3">Trip Planner</h5>
+                    <p class="card-text text-muted">Plan your trips with extended forecasts and packing recommendations.</p>
+                    <a href="{{ url_for('main.trip_planner') }}?lat={{ weather.location.lat }}&lon={{ weather.location.lon }}" class="btn btn-outline-primary mt-3">Plan Your Trip</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card feature-card h-100">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon bg-primary-subtle mb-3">
+                        <i class="fas fa-bell fa-2x"></i>
+                    </div>
+                    <h5 class="card-title mb-3">Smart Notifications</h5>
+                    <p class="card-text text-muted">Set up personalized weather alerts for this location.</p>
+                    <a href="{{ url_for('main.smart_notifications') }}?lat={{ weather.location.lat }}&lon={{ weather.location.lon }}" class="btn btn-outline-primary mt-3">Set Up Alerts</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js for temperature chart -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Temperature Chart
+        const ctx = document.getElementById('temperature-chart').getContext('2d');
+        
+        // Prepare data for chart
+        const labels = [{% for day in weather.forecast %}'{{ day.day }}'{% if not loop.last %}, {% endif %}{% endfor %}];
+        const maxTemps = [{% for day in weather.forecast %}{{ day.temp_max|round(1) }}{% if not loop.last %}, {% endif %}{% endfor %}];
+        const minTemps = [{% for day in weather.forecast %}{{ day.temp_min|round(1) }}{% if not loop.last %}, {% endif %}{% endfor %}];
+        const avgTemps = [{% for day in weather.forecast %}{{ day.temp_avg|round(1) }}{% if not loop.last %}, {% endif %}{% endfor %}];
+        
+        const temperatureChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Max Temperature',
+                        data: maxTemps,
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        pointRadius: 4
+                    },
+                    {
+                        label: 'Average Temperature',
+                        data: avgTemps,
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        pointRadius: 4
+                    },
+                    {
+                        label: 'Min Temperature',
+                        data: minTemps,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        pointRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += context.parsed.y + '°C';
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        title: {
+                            display: true,
+                            text: 'Temperature (°C)'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Handle temperature unit toggle
+        const unitToggle = document.getElementById('unit-toggle');
+        unitToggle.addEventListener('change', function() {
+            const isFahrenheit = this.checked;
+            
+            // Update current temperature
+            const currentTemp = document.querySelector('.current-temperature');
+            const feelsLike = document.querySelector('.detail-value');
+            
+            // Update forecast temperatures
+            const tempMaxElements = document.querySelectorAll('.temp-max');
+            const tempMinElements = document.querySelectorAll('.temp-min');
+            
+            if (isFahrenheit) {
+                // Convert Celsius to Fahrenheit
+                currentTemp.textContent = Math.round({{ weather.current.temp }} * 9/5 + 32) + '°F';
+                feelsLike.textContent = Math.round({{ weather.current.feels_like }} * 9/5 + 32) + '°F';
+                
+                // Update forecast temps
+                {% for day in weather.forecast %}
+                tempMaxElements[{{ loop.index0 }}].textContent = Math.round({{ day.temp_max }} * 9/5 + 32) + '°';
+                tempMinElements[{{ loop.index0 }}].textContent = Math.round({{ day.temp_min }} * 9/5 + 32) + '°';
+                {% endfor %}
+                
+                // Update chart
+                temperatureChart.options.scales.y.title.text = 'Temperature (°F)';
+                temperatureChart.data.datasets[0].data = maxTemps.map(temp => Math.round(temp * 9/5 + 32));
+                temperatureChart.data.datasets[1].data = avgTemps.map(temp => Math.round(temp * 9/5 + 32));
+                temperatureChart.data.datasets[2].data = minTemps.map(temp => Math.round(temp * 9/5 + 32));
+                temperatureChart.options.plugins.tooltip.callbacks.label = function(context) {
+                    let label = context.dataset.label || '';
+                    if (label) {
+                        label += ': ';
+                    }
+                    label += context.parsed.y + '°F';
+                    return label;
+                };
+                temperatureChart.update();
+            } else {
+                // Reset to Celsius
+                currentTemp.textContent = Math.round({{ weather.current.temp }}) + '°C';
+                feelsLike.textContent = Math.round({{ weather.current.feels_like }}) + '°C';
+                
+                // Update forecast temps
+                {% for day in weather.forecast %}
+                tempMaxElements[{{ loop.index0 }}].textContent = Math.round({{ day.temp_max }}) + '°';
+                tempMinElements[{{ loop.index0 }}].textContent = Math.round({{ day.temp_min }}) + '°';
+                {% endfor %}
+                
+                // Update chart
+                temperatureChart.options.scales.y.title.text = 'Temperature (°C)';
+                temperatureChart.data.datasets[0].data = maxTemps;
+                temperatureChart.data.datasets[1].data = avgTemps;
+                temperatureChart.data.datasets[2].data = minTemps;
+                temperatureChart.options.plugins.tooltip.callbacks.label = function(context) {
+                    let label = context.dataset.label || '';
+                    if (label) {
+                        label += ': ';
+                    }
+                    label += context.parsed.y + '°C';
+                    return label;
+                };
+                temperatureChart.update();
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}Error {{ error_code }} - Weather Insights{% endblock %}
+
+{% block extra_css %}
+<style>
+    .error-container {
+        padding: 4rem 0;
+        text-align: center;
+    }
+    
+    .error-code {
+        font-size: 8rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        line-height: 1;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .error-message {
+        font-size: 1.5rem;
+        margin-bottom: 2rem;
+        color: var(--text-color);
+    }
+    
+    .error-description {
+        max-width: 500px;
+        margin: 0 auto 2rem;
+        color: var(--light-text);
+    }
+    
+    .error-actions {
+        margin-top: 2rem;
+    }
+    
+    .error-image {
+        max-width: 300px;
+        margin-bottom: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container error-container">
+    <div class="error-code">{{ error_code }}</div>
+    <h1 class="error-message">{{ error_message }}</h1>
+    
+    <div class="error-description">
+        {% if error_code == 404 %}
+            <p>The page you're looking for doesn't exist or may have been moved.</p>
+        {% elif error_code == 500 %}
+            <p>Something went wrong on our servers. We're working to fix the issue.</p>
+        {% else %}
+            <p>An unexpected error occurred. Please try again later.</p>
+        {% endif %}
+    </div>
+    
+    <div class="error-image">
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <!-- Sad cloud illustration -->
+            <g fill="none" stroke="#1976D2" stroke-width="2">
+                <ellipse cx="100" cy="100" rx="80" ry="50" fill="#E3F2FD"/>
+                <circle cx="70" cy="90" r="8" fill="#1976D2"/>
+                <circle cx="130" cy="90" r="8" fill="#1976D2"/>
+                <path d="M70,120 Q100,140 130,120" stroke-linecap="round"/>
+                <path d="M60,70 Q80,50 100,70" stroke-linecap="round"/>
+                <path d="M100,70 Q120,50 140,70" stroke-linecap="round"/>
+            </g>
+            <!-- Rain drops if it's a 500 error -->
+            {% if error_code == 500 %}
+            <g fill="#64B5F6">
+                <path d="M60,160 L65,170 L55,170 Z"/>
+                <path d="M90,160 L95,170 L85,170 Z"/>
+                <path d="M120,160 L125,170 L115,170 Z"/>
+                <path d="M150,160 L155,170 L145,170 Z"/>
+            </g>
+            {% endif %}
+        </svg>
+    </div>
+    
+    <div class="error-actions">
+        <a href="{{ url_for('main.index') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-home me-2"></i>Go to Homepage
+        </a>
+        {% if error_code == 404 %}
+        <a href="{{ url_for('main.map') }}" class="btn btn-outline-primary btn-lg ms-2">
+            <i class="fas fa-map-marked-alt me-2"></i>Explore Weather Map
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
